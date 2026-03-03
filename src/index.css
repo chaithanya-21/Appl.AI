@@ -1,27 +1,35 @@
+/* ============================= */
+/* iOS 26 DARK MODE ONLY        */
+/* ============================= */
+
+:root {
+  --ios-blue: #0A84FF;
+  --bg-dark: linear-gradient(
+    180deg,
+    rgba(18, 18, 18, 0.95),
+    rgba(10, 10, 10, 0.98)
+  );
+}
+
+* {
+  transition: background 0.3s ease,
+              color 0.3s ease,
+              border 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--bg-dark);
+  color: #ffffff;
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
 }
 
-/* LIGHT MODE */
+/* Remove any light mode override */
 body:not(.dark) {
-  background: linear-gradient(
-    180deg,
-    rgba(245, 245, 247, 0.9),
-    rgba(230, 230, 235, 0.9)
-  );
-  color: #000 !important;
-}
-
-/* DARK MODE */
-body.dark {
-  background: linear-gradient(
-    180deg,
-    rgba(18, 18, 18, 0.95),
-    rgba(10, 10, 10, 0.95)
-  );
-  color: #fff !important;
+  background: var(--bg-dark);
+  color: #ffffff;
 }
