@@ -10,6 +10,10 @@ import Outreach from "./pages/Outreach";
 export default function MainApp() {
 
   const { meta } = useStore();
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
+};
   const [guide,setGuide]=useState(false);
   const location = useLocation();
 
