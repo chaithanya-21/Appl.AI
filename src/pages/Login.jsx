@@ -32,73 +32,54 @@ export default function Login() {
     }
   };
 
-return (
-  <div
-    style={{
-      position: "relative",
-      height: "100vh",
-      backgroundImage: 'url("/ai-login-bg.png")',
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      animation: "float 20s infinite alternate ease-in-out",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-  >
-    {/* Dark overlay */}
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "rgba(0,0,0,0.5)"
-      }}
-    />
+  return (
+    <div style={styles.wrapper}>
 
-    {/* Login Card */}
-    <div
-      style={{
-        position: "relative",
-        zIndex: 2,
-        background: "rgba(255,255,255,0.95)",
-        padding: "40px",
-        borderRadius: "16px",
-        width: "350px",
-        boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-        textAlign: "center"
-      }}
-    >
-      <h2 style={{ marginBottom: "20px" }}>Welcome Back 👋</h2>
+      {/* Animated Background */}
+      <div
+        style={{
+          ...styles.background,
+          backgroundImage: 'url("/ai-login-bg.png")'
+        }}
+      />
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="username"
-          placeholder="Username"
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
+      {/* Dark overlay */}
+      <div style={styles.overlay} />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
+      {/* Login Card */}
+      <div style={styles.card}>
+        <h2 style={{ marginBottom: "20px" }}>Welcome Back 👋</h2>
 
-        <button type="submit" style={styles.button}>
-          Login
-        </button>
-      </form>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="username"
+            placeholder="Username"
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
 
-      <p style={{ marginTop: "15px", color: "#555" }}>
-        Don't have an account? <Link to="/signup">Signup</Link>
-      </p>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+
+        <p style={{ marginTop: "15px", color: "#555" }}>
+          Don't have an account? <Link to="/signup">Signup</Link>
+        </p>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 const styles = {
   wrapper: {
@@ -111,10 +92,7 @@ const styles = {
   },
   background: {
     position: "absolute",
-    width: "110%",
-    height: "110%",
-    top: "-5%",
-    left: "-5%",
+    inset: 0,
     backgroundSize: "cover",
     backgroundPosition: "center",
     animation: "float 20s infinite alternate ease-in-out",
@@ -122,8 +100,7 @@ const styles = {
   },
   overlay: {
     position: "absolute",
-    width: "100%",
-    height: "100%",
+    inset: 0,
     background: "rgba(0,0,0,0.5)",
     zIndex: 2
   },
