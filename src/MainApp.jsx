@@ -14,7 +14,6 @@ export default function MainApp() {
   const [theme, setTheme] = useState("dark");
   const location = useLocation();
 
-  /* Apply theme to body */
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
@@ -27,7 +26,6 @@ export default function MainApp() {
   return (
     <div style={styles.wrapper}>
 
-      {/* Background */}
       <div
         style={{
           ...styles.background,
@@ -35,21 +33,18 @@ export default function MainApp() {
         }}
       />
 
-      {/* Overlay */}
       <div style={styles.overlay} />
 
       <div style={styles.appContainer}>
 
-        {/* SIDEBAR */}
         <div style={styles.sidebar}>
-          <h2>Appl.AI</h2>
+          <h2 style={{ marginBottom: "10px" }}>Appl.AI</h2>
 
           <Nav to="/dashboard" label="Dashboard" active={location.pathname === "/dashboard" || location.pathname === "/"} />
           <Nav to="/jobs" label="Job Board" active={location.pathname === "/jobs"} />
           <Nav to="/applications" label="Applications" active={location.pathname === "/applications"} />
           <Nav to="/outreach" label="Career Center" active={location.pathname === "/outreach"} />
 
-          {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             style={styles.themeToggle}
@@ -57,12 +52,10 @@ export default function MainApp() {
             {theme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode"}
           </button>
 
-          {/* Logout */}
           <button onClick={handleLogout} style={styles.logoutButton}>
             Logout
           </button>
 
-          {/* Guide */}
           <button
             onClick={()=>setGuide(true)}
             style={styles.guideButton}
@@ -71,7 +64,6 @@ export default function MainApp() {
           </button>
         </div>
 
-        {/* MAIN CONTENT */}
         <div style={styles.mainContent}>
 
           <div style={styles.saveIndicator}>
@@ -142,10 +134,10 @@ const styles = {
     display:"flex",
     flexDirection:"column",
     gap:"12px",
-    background:"rgba(255,255,255,0.15)",
+    background:"var(--glass-bg)",
     backdropFilter:"blur(20px)",
     WebkitBackdropFilter:"blur(20px)",
-    borderRight:"1px solid rgba(255,255,255,0.3)"
+    borderRight:"1px solid var(--glass-border)"
   },
 
   navItem:{
@@ -159,8 +151,8 @@ const styles = {
   themeToggle:{
     padding:"10px",
     borderRadius:"14px",
-    border:"none",
-    background:"rgba(255,255,255,0.2)",
+    border:"1px solid var(--glass-border)",
+    background:"var(--glass-bg)",
     color:"var(--text-primary)",
     fontWeight:"500",
     cursor:"pointer"
@@ -169,8 +161,8 @@ const styles = {
   logoutButton:{
     padding:"10px",
     borderRadius:"14px",
-    border:"none",
-    background:"rgba(255,255,255,0.2)",
+    border:"1px solid var(--glass-border)",
+    background:"var(--glass-bg)",
     color:"var(--text-primary)",
     fontWeight:"500",
     cursor:"pointer"
@@ -178,16 +170,14 @@ const styles = {
 
   guideButton:{
     padding:"12px",
-    borderRadius:"14px",
-    border:"none",
-    fontWeight:"600"
+    borderRadius:"14px"
   },
 
   mainContent:{
     flex:1,
     padding:"30px",
     overflow:"auto",
-    background:"rgba(255,255,255,0.12)",
+    background:"var(--glass-bg)",
     backdropFilter:"blur(18px)",
     WebkitBackdropFilter:"blur(18px)"
   },
@@ -196,7 +186,7 @@ const styles = {
     position:"fixed",
     top:20,
     right:30,
-    background:"rgba(255,255,255,0.25)",
+    background:"var(--glass-bg)",
     backdropFilter:"blur(10px)",
     padding:"6px 12px",
     borderRadius:"10px",
