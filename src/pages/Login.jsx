@@ -37,10 +37,7 @@ export default function Login() {
       
       {/* Animated Background */}
       <div
-        style={{
-          ...styles.background,
-          backgroundImage: `url(${bgImage})`
-        }}
+        style={{ backgroundImage: `url("/ai-login-bg.png")` }}
       />
 
       {/* Dark overlay for readability */}
