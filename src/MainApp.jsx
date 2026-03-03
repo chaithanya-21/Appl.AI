@@ -1,4 +1,4 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
 import { useState } from "react";
 
@@ -8,102 +8,73 @@ import Dashboard from "./pages/Dashboard";
 import Outreach from "./pages/Outreach";
 
 export default function MainApp() {
+
   const { meta } = useStore();
-  const [guide, setGuide] = useState(false);
+  const [guide,setGuide]=useState(false);
+  const location = useLocation();
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={styles.wrapper}>
 
-      {/* SIDEBAR */}
-      <div style={{
-        width: "220px",
-        background: "#0f172a",
-        color: "#fff",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px"
-      }}>
-        <h2>Appl.AI</h2>
+      {/* Background */}
+      <div
+        style={{
+          ...styles.background,
+          backgroundImage: 'url("/ai-login-bg.png")'
+        }}
+      />
 
-        <Nav to="/dashboard" label="Dashboard" />
-        <Nav to="/jobs" label="Job Board" />
-        <Nav to="/applications" label="Applications" />
-        <Nav to="/outreach" label="Career Center" />
+      {/* Overlay */}
+      <div style={styles.overlay} />
 
-        <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            window.location.href = "/login";
-          }}
-          style={{
-            marginTop: "auto",
-            background: "#dc2626",
-            color: "#fff",
-            border: "none",
-            padding: "8px",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
-          Logout
-        </button>
+      {/* APP LAYOUT */}
+      <div style={styles.appContainer}>
 
-        <button
-          onClick={() => setGuide(true)}
-          style={{
-            background: "#2563eb",
-            color: "#fff",
-            border: "none",
-            padding: "8px",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
-          User Guide
-        </button>
-      </div>
+        {/* SIDEBAR */}
+        <div style={styles.sidebar}>
+          <h2 style={{ color:"#fff" }}>Appl.AI</h2>
 
-      {/* MAIN */}
-      <div style={{ flex: 1, padding: "20px", overflow: "auto" }}>
+          <Nav to="/dashboard" label="Dashboard" active={location.pathname === "/dashboard" || location.pathname === "/"} />
+          <Nav to="/jobs" label="Job Board" active={location.pathname === "/jobs"} />
+          <Nav to="/applications" label="Applications" active={location.pathname === "/applications"} />
+          <Nav to="/outreach" label="Career Center" active={location.pathname === "/outreach"} />
 
-        <div style={{
-          position: "fixed",
-          top: 10,
-          right: 20,
-          background: "#16a34a",
-          color: "#fff",
-          padding: "6px 12px",
-          borderRadius: "8px",
-          fontSize: "12px"
-        }}>
-          Saved ✓ {new Date(meta.lastSaved).toLocaleTimeString()}
+          <button
+            onClick={()=>setGuide(true)}
+            style={styles.guideButton}
+          >
+            User Guide
+          </button>
         </div>
 
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/applications" element={<Applications />} />
-          <Route path="/outreach" element={<Outreach />} />
-        </Routes>
-      </div>
+        {/* MAIN CONTENT */}
+        <div style={styles.mainContent}>
 
-      {guide && <GuideModal close={() => setGuide(false)} />}
+          <div style={styles.saveIndicator}>
+            Saved ✓ {new Date(meta.lastSaved).toLocaleTimeString()}
+          </div>
+
+          <Routes>
+            <Route path="/" element={<Dashboard/>}/>
+            <Route path="/dashboard" element={<Dashboard/>}/>
+            <Route path="/jobs" element={<Jobs/>}/>
+            <Route path="/applications" element={<Applications/>}/>
+            <Route path="/outreach" element={<Outreach/>}/>
+          </Routes>
+
+        </div>
+      </div>
     </div>
   );
 }
 
-function Nav({ to, label }) {
-  return (
+function Nav({to,label,active}){
+  return(
     <Link
       to={to}
       style={{
-        color: "#fff",
-        textDecoration: "none",
-        padding: "8px",
-        borderRadius: "6px",
-        background: "rgba(255,255,255,0.05)"
+        ...styles.navItem,
+        background: active ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)"
       }}
     >
       {label}
@@ -111,31 +82,86 @@ function Nav({ to, label }) {
   );
 }
 
-function GuideModal({ close }) {
-  return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.4)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}>
-      <div style={{
-        background: "#fff",
-        padding: "24px",
-        borderRadius: "12px",
-        width: "420px"
-      }}>
-        <h2>How to Use Appl.AI</h2>
-        <ul>
-          <li>Add or fetch jobs</li>
-          <li>Apply and track progress</li>
-          <li>Optimize resume per job</li>
-          <li>Generate outreach packages</li>
-        </ul>
-        <button onClick={close} style={{ marginTop: "10px" }}>Close</button>
-      </div>
-    </div>
-  );
-}
+const styles = {
+  wrapper:{
+    position:"relative",
+    height:"100vh",
+    overflow:"hidden"
+  },
+
+  background:{
+    position:"absolute",
+    inset:0,
+    backgroundSize:"cover",
+    backgroundPosition:"center",
+    animation:"float 30s infinite alternate ease-in-out",
+    zIndex:1
+  },
+
+  overlay:{
+    position:"absolute",
+    inset:0,
+    background:"rgba(0,0,0,0.4)",
+    zIndex:2
+  },
+
+  appContainer:{
+    position:"relative",
+    zIndex:3,
+    display:"flex",
+    height:"100vh"
+  },
+
+  sidebar:{
+    width:"240px",
+    padding:"20px",
+    display:"flex",
+    flexDirection:"column",
+    gap:"12px",
+    background:"rgba(255,255,255,0.15)",
+    backdropFilter:"blur(20px)",
+    WebkitBackdropFilter:"blur(20px)",
+    borderRight:"1px solid rgba(255,255,255,0.3)",
+    color:"#fff"
+  },
+
+  navItem:{
+    color:"#fff",
+    textDecoration:"none",
+    padding:"10px",
+    borderRadius:"12px",
+    transition:"0.3s"
+  },
+
+  guideButton:{
+    marginTop:"auto",
+    padding:"10px",
+    borderRadius:"12px",
+    border:"none",
+    background:"rgba(255,255,255,0.2)",
+    color:"#fff",
+    cursor:"pointer"
+  },
+
+  mainContent:{
+    flex:1,
+    padding:"30px",
+    overflow:"auto",
+    background:"rgba(255,255,255,0.12)",
+    backdropFilter:"blur(18px)",
+    WebkitBackdropFilter:"blur(18px)",
+    borderLeft:"1px solid rgba(255,255,255,0.2)"
+  },
+
+  saveIndicator:{
+    position:"fixed",
+    top:20,
+    right:30,
+    background:"rgba(255,255,255,0.25)",
+    backdropFilter:"blur(10px)",
+    padding:"6px 12px",
+    borderRadius:"10px",
+    color:"#fff",
+    fontSize:"12px"
+  }
+};
