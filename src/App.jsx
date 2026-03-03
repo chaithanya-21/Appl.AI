@@ -8,7 +8,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Pages */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
