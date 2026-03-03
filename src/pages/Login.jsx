@@ -32,51 +32,73 @@ export default function Login() {
     }
   };
 
-  return (
-    <div style={styles.wrapper}>
-      
-      {/* Animated Background */}
-      <div
-        style={{ backgroundImage: `url("/ai-login-bg.png")` }}
-      />
+return (
+  <div
+    style={{
+      position: "relative",
+      height: "100vh",
+      backgroundImage: 'url("/ai-login-bg.png")',
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      animation: "float 20s infinite alternate ease-in-out",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}
+  >
+    {/* Dark overlay */}
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)"
+      }}
+    />
 
-      {/* Dark overlay for readability */}
-      <div style={styles.overlay} />
+    {/* Login Card */}
+    <div
+      style={{
+        position: "relative",
+        zIndex: 2,
+        background: "rgba(255,255,255,0.95)",
+        padding: "40px",
+        borderRadius: "16px",
+        width: "350px",
+        boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+        textAlign: "center"
+      }}
+    >
+      <h2 style={{ marginBottom: "20px" }}>Welcome Back 👋</h2>
 
-      {/* Login Card */}
-      <div style={styles.card}>
-        <h2 style={{ marginBottom: "20px" }}>Welcome Back 👋</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="username"
+          placeholder="Username"
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
 
-        <form onSubmit={handleSubmit}>
-          <input
-            name="username"
-            placeholder="Username"
-            onChange={handleChange}
-            required
-            style={styles.input}
-          />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-            style={styles.input}
-          />
+        <button type="submit" style={styles.button}>
+          Login
+        </button>
+      </form>
 
-          <button type="submit" style={styles.button}>
-            Login
-          </button>
-        </form>
-
-        <p style={{ marginTop: "15px", color: "#555" }}>
-          Don't have an account? <Link to="/signup">Signup</Link>
-        </p>
-      </div>
+      <p style={{ marginTop: "15px", color: "#555" }}>
+        Don't have an account? <Link to="/signup">Signup</Link>
+      </p>
     </div>
-  );
-}
+  </div>
+);
 
 const styles = {
   wrapper: {
