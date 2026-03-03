@@ -28,7 +28,8 @@ exports.signup = async (req, res) => {
     res.status(201).json({ message: "User created successfully" });
 
   } catch (error) {
-    res.status(500).json({ message: "Signup failed", error });
+    console.error("Signup error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -60,8 +61,8 @@ exports.login = async (req, res) => {
       token
     });
 
-catch (error) {
-  console.error("Signup error:", error);
-  res.status(500).json({ message: error.message });
-}
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
