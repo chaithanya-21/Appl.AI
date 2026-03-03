@@ -12,10 +12,13 @@ import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Applications";
 import Outreach from "./pages/Outreach";
-import UserGuide from "./pages/UserGuide";
+import Assistant from "./pages/Assistant";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import PublicForm from "./pages/PublicForm";
+import Resume from "./pages/Resume";
 
 function Navigation() {
-  const navigate = useNavigate();
   const location = useLocation();
 
   return (
@@ -23,41 +26,21 @@ function Navigation() {
       <div className="text-lg font-semibold">Appl.AI</div>
 
       <div className="flex gap-4 items-center">
-        <Link
-          to="/"
-          className={location.pathname === "/" ? "text-blue-400" : ""}
-        >
+        <Link to="/" className={location.pathname === "/" ? "text-blue-400" : ""}>
           Home
         </Link>
 
-        <Link
-          to="/jobs"
-          className={location.pathname === "/jobs" ? "text-blue-400" : ""}
-        >
+        <Link to="/jobs" className={location.pathname === "/jobs" ? "text-blue-400" : ""}>
           Job Board
         </Link>
 
-        <Link
-          to="/applications"
-          className={
-            location.pathname === "/applications" ? "text-blue-400" : ""
-          }
-        >
+        <Link to="/applications" className={location.pathname === "/applications" ? "text-blue-400" : ""}>
           Applications
         </Link>
 
-        <Link
-          to="/outreach"
-          className={
-            location.pathname === "/outreach" ? "text-blue-400" : ""
-          }
-        >
+        <Link to="/outreach" className={location.pathname === "/outreach" ? "text-blue-400" : ""}>
           Career Centre
         </Link>
-
-        <button onClick={() => navigate("/userguide")}>
-          User Guide
-        </button>
       </div>
     </nav>
   );
@@ -71,13 +54,18 @@ function App() {
   return (
     <BrowserRouter>
       <Navigation />
+
       <div className="p-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/outreach" element={<Outreach />} />
-          <Route path="/userguide" element={<UserGuide />} />
+          <Route path="/assistant" element={<Assistant />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/public-form" element={<PublicForm />} />
+          <Route path="/resume" element={<Resume />} />
         </Routes>
       </div>
     </BrowserRouter>
