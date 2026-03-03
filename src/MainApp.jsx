@@ -42,7 +42,9 @@ export default function MainApp() {
           <Nav to="/jobs" label="Job Board" active={location.pathname === "/jobs"} />
           <Nav to="/applications" label="Applications" active={location.pathname === "/applications"} />
           <Nav to="/outreach" label="Career Center" active={location.pathname === "/outreach"} />
-
+          <button onClick={handleLogout} style={styles.logoutButton}>
+           Logout
+           </button>
           <button
             onClick={()=>setGuide(true)}
             style={styles.guideButton}
