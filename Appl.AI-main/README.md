@@ -1,2 +1,0 @@
-# Appl.AI
-Appl.AI
