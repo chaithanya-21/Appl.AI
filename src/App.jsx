@@ -1,27 +1,68 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ProtectedRoute from "./components/ProtectedRoute";
-import MainApp from "./MainApp";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 
-export default function App() {
+import Dashboard from "./pages/Dashboard";
+import Jobs from "./pages/Jobs";
+import Applications from "./pages/Applications";
+import CareerCentre from "./pages/CareerCentre";
+import UserGuide from "./pages/UserGuide";
+
+function Navigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <nav className="flex justify-between items-center px-6 py-4 glass-card small">
+      <div className="text-lg font-semibold">Appl.AI</div>
 
-        {/* Protected App */}
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <MainApp />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+      <div className="flex gap-4 items-center">
+        <Link to="/" className={location.pathname === "/" ? "text-blue-400" : ""}>
+          Home
+        </Link>
+
+        <Link to="/jobs" className={location.pathname === "/jobs" ? "text-blue-400" : ""}>
+          Job Board
+        </Link>
+
+        <Link to="/applications" className={location.pathname === "/applications" ? "text-blue-400" : ""}>
+          Applications
+        </Link>
+
+        <Link to="/career-centre" className={location.pathname === "/career-centre" ? "text-blue-400" : ""}>
+          Career Centre
+        </Link>
+
+        {/* Fixed User Guide Button */}
+        <button onClick={() => navigate("/userguide")}>
+          User Guide
+        </button>
+      </div>
+    </nav>
   );
 }
+
+function App() {
+
+  // 🔥 Force permanent dark mode
+  useEffect(() => {
+    document.body.classList.add("dark");
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Navigation />
+
+      <div className="p-6">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/applications" element={<Applications />} />
+          <Route path="/career-centre" element={<CareerCentre />} />
+          <Route path="/userguide" element={<UserGuide />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;
