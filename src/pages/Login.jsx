@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -26,20 +26,24 @@ export default function Login() {
 
     if (data.token) {
       localStorage.setItem("token", data.token);
-      navigate("/home");
+      navigate("/");
     } else {
       alert(data.message);
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "40px" }}>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <input name="username" placeholder="Username" onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+        <input name="username" placeholder="Username" onChange={handleChange} required /><br /><br />
+        <input type="password" name="password" placeholder="Password" onChange={handleChange} required /><br /><br />
         <button type="submit">Login</button>
       </form>
+
+      <p style={{ marginTop: "15px" }}>
+        Don't have an account? <Link to="/signup">Signup</Link>
+      </p>
     </div>
   );
 }
