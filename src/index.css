@@ -1,51 +1,27 @@
-/* ============================= */
-/* iOS 26 Inspired Global Theme  */
-/* ============================= */
-
-:root {
-  --ios-blue: #0A84FF;
-
-  /* Light Mode */
-  --bg-light: rgba(245, 245, 247, 0.75);
-  --card-light: rgba(255, 255, 255, 0.6);
-  --card-light-strong: rgba(255, 255, 255, 0.8);
-  --text-light: #000000;
-
-  /* Dark Mode */
-  --bg-dark: rgba(18, 18, 18, 0.75);
-  --card-dark: rgba(28, 28, 30, 0.6);
-  --card-dark-strong: rgba(44, 44, 46, 0.8);
-  --text-dark: #ffffff;
-}
-
-/* Smooth transitions everywhere */
-* {
-  transition: background 0.3s ease,
-              color 0.3s ease,
-              border 0.3s ease,
-              box-shadow 0.3s ease;
-}
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: var(--bg-light);
-  color: var(--text-light);
-  backdrop-filter: blur(30px);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
 }
 
-/* Dark mode support */
+/* LIGHT MODE */
+body:not(.dark) {
+  background: linear-gradient(
+    180deg,
+    rgba(245, 245, 247, 0.9),
+    rgba(230, 230, 235, 0.9)
+  );
+  color: #000 !important;
+}
+
+/* DARK MODE */
 body.dark {
-  background: var(--bg-dark);
-  color: var(--text-dark);
-}
-
-/* Scrollbar subtle */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.4);
-  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 18, 18, 0.95),
+    rgba(10, 10, 10, 0.95)
+  );
+  color: #fff !important;
 }
