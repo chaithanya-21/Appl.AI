@@ -12,7 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Applications";
 import Outreach from "./pages/Outreach";
-import Userguide from "./pages/Userguide";   // ✅ Correct casing
+import UserGuide from "./pages/UserGuide";
 
 function Navigation() {
   const navigate = useNavigate();
@@ -23,19 +23,35 @@ function Navigation() {
       <div className="text-lg font-semibold">Appl.AI</div>
 
       <div className="flex gap-4 items-center">
-        <Link to="/" className={location.pathname === "/" ? "text-blue-400" : ""}>
+        <Link
+          to="/"
+          className={location.pathname === "/" ? "text-blue-400" : ""}
+        >
           Home
         </Link>
 
-        <Link to="/jobs" className={location.pathname === "/jobs" ? "text-blue-400" : ""}>
+        <Link
+          to="/jobs"
+          className={location.pathname === "/jobs" ? "text-blue-400" : ""}
+        >
           Job Board
         </Link>
 
-        <Link to="/applications" className={location.pathname === "/applications" ? "text-blue-400" : ""}>
+        <Link
+          to="/applications"
+          className={
+            location.pathname === "/applications" ? "text-blue-400" : ""
+          }
+        >
           Applications
         </Link>
 
-        <Link to="/outreach" className={location.pathname === "/outreach" ? "text-blue-400" : ""}>
+        <Link
+          to="/outreach"
+          className={
+            location.pathname === "/outreach" ? "text-blue-400" : ""
+          }
+        >
           Career Centre
         </Link>
 
@@ -55,14 +71,13 @@ function App() {
   return (
     <BrowserRouter>
       <Navigation />
-
       <div className="p-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/outreach" element={<Outreach />} />
-          <Route path="/userguide" element={<Userguide />} />
+          <Route path="/userguide" element={<UserGuide />} />
         </Routes>
       </div>
     </BrowserRouter>
