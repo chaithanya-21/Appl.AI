@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
@@ -16,23 +23,38 @@ function Navigation() {
       <div className="text-lg font-semibold">Appl.AI</div>
 
       <div className="flex gap-4 items-center">
-        <Link to="/" className={location.pathname === "/" ? "text-blue-400" : ""}>
+        <Link
+          to="/"
+          className={location.pathname === "/" ? "text-blue-400" : ""}
+        >
           Home
         </Link>
 
-        <Link to="/jobs" className={location.pathname === "/jobs" ? "text-blue-400" : ""}>
+        <Link
+          to="/jobs"
+          className={location.pathname === "/jobs" ? "text-blue-400" : ""}
+        >
           Job Board
         </Link>
 
-        <Link to="/applications" className={location.pathname === "/applications" ? "text-blue-400" : ""}>
+        <Link
+          to="/applications"
+          className={
+            location.pathname === "/applications" ? "text-blue-400" : ""
+          }
+        >
           Applications
         </Link>
 
-        <Link to="/career-centre" className={location.pathname === "/career-centre" ? "text-blue-400" : ""}>
+        <Link
+          to="/career-centre"
+          className={
+            location.pathname === "/career-centre" ? "text-blue-400" : ""
+          }
+        >
           Career Centre
         </Link>
 
-        {/* Fixed User Guide Button */}
         <button onClick={() => navigate("/userguide")}>
           User Guide
         </button>
@@ -42,7 +64,6 @@ function Navigation() {
 }
 
 function App() {
-
   // 🔥 Force permanent dark mode
   useEffect(() => {
     document.body.classList.add("dark");
