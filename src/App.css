@@ -1,5 +1,5 @@
 /* ============================= */
-/* TRUE iOS Glass System         */
+/* TRUE iOS GLASS SYSTEM        */
 /* ============================= */
 
 .glass-card {
@@ -7,60 +7,72 @@
   border-radius: 20px;
   padding: 20px;
 
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  background: rgba(28, 28, 30, 0.55) !important;
 
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-  transition: all 0.3s ease;
+  color: #ffffff !important;
 }
 
-/* LIGHT MODE */
-body:not(.dark) .glass-card {
-  background: rgba(255, 255, 255, 0.55) !important;
-  color: #000 !important;
-}
-
-/* Smaller cards slightly stronger */
-body:not(.dark) .glass-card.small {
-  background: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* DARK MODE */
-body.dark .glass-card {
-  background: rgba(28, 28, 30, 0.55) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-body.dark .glass-card.small {
+/* Smaller tiles slightly stronger */
+.glass-card.small {
   background: rgba(44, 44, 46, 0.75) !important;
 }
 
-/* ============================= */
-/* iOS Blue Button               */
-/* ============================= */
-
-.ios-button {
-  background: #0A84FF;
-  color: white;
-  border: none;
-  border-radius: 14px;
-  padding: 10px 18px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4);
+/* FORCE override for job board & applications */
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-200 {
+  background: rgba(28, 28, 30, 0.55) !important;
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff !important;
 }
 
-.ios-button:hover {
+/* ============================= */
+/* Inputs & Search Fields       */
+/* ============================= */
+
+input,
+textarea,
+select {
+  background: rgba(44, 44, 46, 0.6) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 10px 14px;
+  outline: none;
+  backdrop-filter: blur(20px);
+}
+
+/* ============================= */
+/* ALL BUTTONS BLUE             */
+/* ============================= */
+
+button {
+  background: #0A84FF !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 14px !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4) !important;
+}
+
+button:hover {
   opacity: 0.9;
 }
 
-.ios-button:active {
+button:active {
   transform: scale(0.97);
 }
