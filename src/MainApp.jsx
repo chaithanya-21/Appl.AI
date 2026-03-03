@@ -131,24 +131,39 @@ const styles = {
     color:"#fff"
   },
 
-  navItem:{
-    color:"#fff",
-    textDecoration:"none",
-    padding:"10px",
-    borderRadius:"12px",
-    transition:"0.3s"
-  },
+navItem:{
+  color:"#fff",
+  textDecoration:"none",
+  padding:"12px",
+  borderRadius:"14px",
+  transition:"all 0.25s ease",
+  backdropFilter:"blur(6px)"
+},
 
   guideButton:{
-    marginTop:"auto",
-    padding:"10px",
-    borderRadius:"12px",
-    border:"none",
-    background:"rgba(255,255,255,0.2)",
-    color:"#fff",
-    cursor:"pointer"
-  },
+  marginTop:"auto",
+  padding:"12px",
+  borderRadius:"14px",
+  border:"none",
+  background:"linear-gradient(180deg, #0A84FF, #0066CC)",
+  color:"#fff",
+  fontWeight:"600",
+  cursor:"pointer",
+  boxShadow:"0 8px 20px rgba(0,122,255,0.4)",
+  transition:"all 0.2s ease"
+},
+  
 
+  logoutButton:{
+  padding:"12px",
+  borderRadius:"14px",
+  border:"none",
+  background:"rgba(255,255,255,0.2)",
+  color:"#fff",
+  fontWeight:"500",
+  cursor:"pointer",
+  transition:"all 0.2s ease"
+},
   mainContent:{
     flex:1,
     padding:"30px",
