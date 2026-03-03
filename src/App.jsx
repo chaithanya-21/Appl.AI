@@ -11,7 +11,7 @@ import {
 import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Applications";
-import CareerCentre from "./pages/CareerCentre";
+import Outreach from "./pages/Outreach";
 import UserGuide from "./pages/UserGuide";
 
 function Navigation() {
@@ -47,9 +47,9 @@ function Navigation() {
         </Link>
 
         <Link
-          to="/career-centre"
+          to="/outreach"
           className={
-            location.pathname === "/career-centre" ? "text-blue-400" : ""
+            location.pathname === "/outreach" ? "text-blue-400" : ""
           }
         >
           Career Centre
@@ -78,7 +78,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/applications" element={<Applications />} />
-          <Route path="/career-centre" element={<CareerCentre />} />
+          <Route path="/outreach" element={<Outreach />} />
           <Route path="/userguide" element={<UserGuide />} />
         </Routes>
       </div>
