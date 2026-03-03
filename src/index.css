@@ -1,0 +1,125 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* =========================
+   🍏 THEME VARIABLES
+========================= */
+
+body.dark {
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.75);
+  --bg-base: #0f172a;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.3);
+  --card-text: #1C1C1E; /* DARK text for white cards */
+}
+
+body.light {
+  --text-primary: #1C1C1E;
+  --text-secondary: #3A3A3C;
+  --bg-base: #f5f5f7;
+  --glass-bg: rgba(255,255,255,0.75);
+  --glass-border: rgba(0,0,0,0.08);
+  --card-text: #1C1C1E; /* DARK text for white cards */
+}
+
+/* =========================
+   GLOBAL BASE
+========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* LINKS */
+a {
+  color: #0A84FF;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* =========================
+   🍏 iOS BUTTONS
+========================= */
+
+button {
+  background: linear-gradient(180deg, #0A84FF, #0066CC);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,122,255,0.4);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0,122,255,0.5);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* =========================
+   🍏 iOS INPUTS
+========================= */
+
+input,
+textarea,
+select {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #0A84FF;
+  box-shadow: 0 0 0 3px rgba(10,132,255,0.3);
+}
+
+/* =========================
+   FLOAT BACKGROUND
+========================= */
+
+@keyframes float {
+  0% {
+    transform: scale(1) translateY(0px);
+  }
+  50% {
+    transform: scale(1.03) translateY(-10px);
+  }
+  100% {
+    transform: scale(1.05) translateY(-20px);
+  }
+}
