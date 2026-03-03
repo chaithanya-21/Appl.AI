@@ -14,6 +14,7 @@ body.dark {
   --bg-base: #0f172a;
   --glass-bg: rgba(255,255,255,0.15);
   --glass-border: rgba(255,255,255,0.3);
+  --card-text: #1C1C1E; /* DARK text for white cards */
 }
 
 body.light {
@@ -22,6 +23,7 @@ body.light {
   --bg-base: #f5f5f7;
   --glass-bg: rgba(255,255,255,0.75);
   --glass-border: rgba(0,0,0,0.08);
+  --card-text: #1C1C1E; /* DARK text for white cards */
 }
 
 /* =========================
