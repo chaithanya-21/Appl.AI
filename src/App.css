@@ -1,47 +1,52 @@
 /* ============================= */
-/* Glassmorphism Card System     */
+/* TRUE iOS Glass System         */
 /* ============================= */
 
 .glass-card {
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  position: relative;
   border-radius: 20px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  transition: all 0.3s ease;
 }
 
-/* Light mode cards */
+/* LIGHT MODE */
 body:not(.dark) .glass-card {
-  background: var(--card-light);
+  background: rgba(255, 255, 255, 0.55) !important;
+  color: #000 !important;
 }
 
-/* Slightly stronger small cards */
+/* Smaller cards slightly stronger */
 body:not(.dark) .glass-card.small {
-  background: var(--card-light-strong);
+  background: rgba(255, 255, 255, 0.75) !important;
 }
 
-/* Dark mode cards */
+/* DARK MODE */
 body.dark .glass-card {
-  background: var(--card-dark);
+  background: rgba(28, 28, 30, 0.55) !important;
+  color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 body.dark .glass-card.small {
-  background: var(--card-dark-strong);
+  background: rgba(44, 44, 46, 0.75) !important;
 }
 
 /* ============================= */
-/* iOS 26 Button Styling         */
+/* iOS Blue Button               */
 /* ============================= */
 
 .ios-button {
-  background: var(--ios-blue);
+  background: #0A84FF;
   color: white;
   border: none;
   border-radius: 14px;
@@ -58,27 +63,4 @@ body.dark .glass-card.small {
 
 .ios-button:active {
   transform: scale(0.97);
-}
-
-/* Inputs */
-input, textarea, select {
-  border-radius: 14px;
-  border: none;
-  padding: 10px 14px;
-  outline: none;
-  font-size: 14px;
-}
-
-body:not(.dark) input,
-body:not(.dark) textarea,
-body:not(.dark) select {
-  background: rgba(255, 255, 255, 0.7);
-  color: black;
-}
-
-body.dark input,
-body.dark textarea,
-body.dark select {
-  background: rgba(44, 44, 46, 0.7);
-  color: white;
 }
