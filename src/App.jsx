@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Link,
-  useNavigate,
   useLocation,
 } from "react-router-dom";
 
@@ -15,8 +14,8 @@ import Outreach from "./pages/Outreach";
 import Assistant from "./pages/Assistant";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import PublicForm from "./pages/PublicForm";
-import Resume from "./pages/Resume";
+import PublicPortfolio from "./pages/PublicPortfolio";
+import Resumes from "./pages/Resumes";
 
 function Navigation() {
   const location = useLocation();
@@ -64,8 +63,8 @@ function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/public-form" element={<PublicForm />} />
-          <Route path="/resume" element={<Resume />} />
+          <Route path="/portfolio" element={<PublicPortfolio />} />
+          <Route path="/resumes" element={<Resumes />} />
         </Routes>
       </div>
     </BrowserRouter>
