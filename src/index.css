@@ -1,51 +1,125 @@
-/* ============================= */
-/* iOS 26 Inspired Global Theme  */
-/* ============================= */
-
 :root {
-  --ios-blue: #0A84FF;
-
-  /* Light Mode */
-  --bg-light: rgba(245, 245, 247, 0.75);
-  --card-light: rgba(255, 255, 255, 0.6);
-  --card-light-strong: rgba(255, 255, 255, 0.8);
-  --text-light: #000000;
-
-  /* Dark Mode */
-  --bg-dark: rgba(18, 18, 18, 0.75);
-  --card-dark: rgba(28, 28, 30, 0.6);
-  --card-dark-strong: rgba(44, 44, 46, 0.8);
-  --text-dark: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
-/* Smooth transitions everywhere */
+/* =========================
+   🍏 THEME VARIABLES
+========================= */
+
+body.dark {
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.75);
+  --bg-base: #0f172a;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.3);
+  --card-text: #1C1C1E; /* DARK text for white cards */
+}
+
+body.light {
+  --text-primary: #1C1C1E;
+  --text-secondary: #3A3A3C;
+  --bg-base: #f5f5f7;
+  --glass-bg: rgba(255,255,255,0.75);
+  --glass-border: rgba(0,0,0,0.08);
+  --card-text: #1C1C1E; /* DARK text for white cards */
+}
+
+/* =========================
+   GLOBAL BASE
+========================= */
+
 * {
-  transition: background 0.3s ease,
-              color 0.3s ease,
-              border 0.3s ease,
-              box-shadow 0.3s ease;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: var(--bg-light);
-  color: var(--text-light);
-  backdrop-filter: blur(30px);
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark mode support */
-body.dark {
-  background: var(--bg-dark);
-  color: var(--text-dark);
+/* LINKS */
+a {
+  color: #0A84FF;
+  text-decoration: none;
+  transition: 0.2s ease;
 }
 
-/* Scrollbar subtle */
-::-webkit-scrollbar {
-  width: 6px;
+a:hover {
+  opacity: 0.8;
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.4);
-  border-radius: 10px;
+
+/* =========================
+   🍏 iOS BUTTONS
+========================= */
+
+button {
+  background: linear-gradient(180deg, #0A84FF, #0066CC);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,122,255,0.4);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0,122,255,0.5);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* =========================
+   🍏 iOS INPUTS
+========================= */
+
+input,
+textarea,
+select {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #0A84FF;
+  box-shadow: 0 0 0 3px rgba(10,132,255,0.3);
+}
+
+/* =========================
+   FLOAT BACKGROUND
+========================= */
+
+@keyframes float {
+  0% {
+    transform: scale(1) translateY(0px);
+  }
+  50% {
+    transform: scale(1.03) translateY(-10px);
+  }
+  100% {
+    transform: scale(1.05) translateY(-20px);
+  }
 }
