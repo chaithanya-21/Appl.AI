@@ -1,6 +1,6 @@
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Applications";
@@ -10,12 +10,19 @@ import Outreach from "./pages/Outreach";
 export default function MainApp() {
 
   const { meta } = useStore();
-  const handleLogout = () => {
-  localStorage.removeItem("token");
-  window.location.href = "/login";
-};
   const [guide,setGuide]=useState(false);
+  const [theme, setTheme] = useState("dark");
   const location = useLocation();
+
+  /* Apply theme to body */
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
 
   return (
     <div style={styles.wrapper}>
@@ -31,20 +38,31 @@ export default function MainApp() {
       {/* Overlay */}
       <div style={styles.overlay} />
 
-      {/* APP LAYOUT */}
       <div style={styles.appContainer}>
 
         {/* SIDEBAR */}
         <div style={styles.sidebar}>
-          <h2 style={{ color:"#fff" }}>Appl.AI</h2>
+          <h2>Appl.AI</h2>
 
           <Nav to="/dashboard" label="Dashboard" active={location.pathname === "/dashboard" || location.pathname === "/"} />
           <Nav to="/jobs" label="Job Board" active={location.pathname === "/jobs"} />
           <Nav to="/applications" label="Applications" active={location.pathname === "/applications"} />
           <Nav to="/outreach" label="Career Center" active={location.pathname === "/outreach"} />
+
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            style={styles.themeToggle}
+          >
+            {theme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+          </button>
+
+          {/* Logout */}
           <button onClick={handleLogout} style={styles.logoutButton}>
-           Logout
-           </button>
+            Logout
+          </button>
+
+          {/* Guide */}
           <button
             onClick={()=>setGuide(true)}
             style={styles.guideButton}
@@ -107,7 +125,7 @@ const styles = {
   overlay:{
     position:"absolute",
     inset:0,
-    background:"rgba(0,0,0,0.4)",
+    background:"rgba(0,0,0,0.35)",
     zIndex:2
   },
 
@@ -127,51 +145,51 @@ const styles = {
     background:"rgba(255,255,255,0.15)",
     backdropFilter:"blur(20px)",
     WebkitBackdropFilter:"blur(20px)",
-    borderRight:"1px solid rgba(255,255,255,0.3)",
-    color:"#fff"
+    borderRight:"1px solid rgba(255,255,255,0.3)"
   },
 
-navItem:{
-  color:"#fff",
-  textDecoration:"none",
-  padding:"12px",
-  borderRadius:"14px",
-  transition:"all 0.25s ease",
-  backdropFilter:"blur(6px)"
-},
+  navItem:{
+    textDecoration:"none",
+    padding:"12px",
+    borderRadius:"14px",
+    transition:"all 0.25s ease",
+    color:"var(--text-primary)"
+  },
 
-  guideButton:{
-  marginTop:"auto",
-  padding:"12px",
-  borderRadius:"14px",
-  border:"none",
-  background:"linear-gradient(180deg, #0A84FF, #0066CC)",
-  color:"#fff",
-  fontWeight:"600",
-  cursor:"pointer",
-  boxShadow:"0 8px 20px rgba(0,122,255,0.4)",
-  transition:"all 0.2s ease"
-},
-  
+  themeToggle:{
+    padding:"10px",
+    borderRadius:"14px",
+    border:"none",
+    background:"rgba(255,255,255,0.2)",
+    color:"var(--text-primary)",
+    fontWeight:"500",
+    cursor:"pointer"
+  },
 
   logoutButton:{
-  padding:"12px",
-  borderRadius:"14px",
-  border:"none",
-  background:"rgba(255,255,255,0.2)",
-  color:"#fff",
-  fontWeight:"500",
-  cursor:"pointer",
-  transition:"all 0.2s ease"
-},
+    padding:"10px",
+    borderRadius:"14px",
+    border:"none",
+    background:"rgba(255,255,255,0.2)",
+    color:"var(--text-primary)",
+    fontWeight:"500",
+    cursor:"pointer"
+  },
+
+  guideButton:{
+    padding:"12px",
+    borderRadius:"14px",
+    border:"none",
+    fontWeight:"600"
+  },
+
   mainContent:{
     flex:1,
     padding:"30px",
     overflow:"auto",
     background:"rgba(255,255,255,0.12)",
     backdropFilter:"blur(18px)",
-    WebkitBackdropFilter:"blur(18px)",
-    borderLeft:"1px solid rgba(255,255,255,0.2)"
+    WebkitBackdropFilter:"blur(18px)"
   },
 
   saveIndicator:{
@@ -182,7 +200,6 @@ navItem:{
     backdropFilter:"blur(10px)",
     padding:"6px 12px",
     borderRadius:"10px",
-    color:"#fff",
     fontSize:"12px"
   }
 };
