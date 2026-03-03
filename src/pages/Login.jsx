@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import bgImage from "../assets/ai-login-bg.png";
 
 export default function Login() {
   const [form, setForm] = useState({
