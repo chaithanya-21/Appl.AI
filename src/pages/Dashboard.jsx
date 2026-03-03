@@ -81,7 +81,8 @@ function Card({title,children}){
       padding:"16px",
       borderRadius:"12px",
       minWidth:"260px",
-      boxShadow:"0 4px 12px rgba(0,0,0,0.06)"
+      boxShadow:"0 4px 12px rgba(0,0,0,0.06)",
+      color:"var(--card-text)"   // 🔥 THIS FIXES LEGIBILITY
     }}>
       <h3>{title}</h3>
       {children}
