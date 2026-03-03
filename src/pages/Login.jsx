@@ -43,12 +43,14 @@ export default function Login() {
         }}
       />
 
-      {/* Dark overlay */}
+      {/* Softer Dark Overlay */}
       <div style={styles.overlay} />
 
-      {/* Login Card */}
+      {/* Glass Login Card */}
       <div style={styles.card}>
-        <h2 style={{ marginBottom: "20px" }}>Welcome Back 👋</h2>
+        <h2 style={{ marginBottom: "20px", color: "#fff" }}>
+          Welcome Back 👋
+        </h2>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -73,8 +75,8 @@ export default function Login() {
           </button>
         </form>
 
-        <p style={{ marginTop: "15px", color: "#555" }}>
-          Don't have an account? <Link to="/signup">Signup</Link>
+        <p style={{ marginTop: "15px", color: "#eee" }}>
+          Don't have an account? <Link to="/signup" style={{ color: "#fff", fontWeight: "600" }}>Signup</Link>
         </p>
       </div>
     </div>
@@ -90,6 +92,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center"
   },
+
   background: {
     position: "absolute",
     inset: 0,
@@ -98,36 +101,46 @@ const styles = {
     animation: "float 20s infinite alternate ease-in-out",
     zIndex: 1
   },
+
   overlay: {
     position: "absolute",
     inset: 0,
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.35)", // softer so background is visible
     zIndex: 2
   },
+
   card: {
     position: "relative",
     zIndex: 3,
-    background: "rgba(255,255,255,0.95)",
-    padding: "40px",
-    borderRadius: "16px",
-    width: "350px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+    background: "rgba(255, 255, 255, 0.15)", // translucent
+    backdropFilter: "blur(18px)",
+    WebkitBackdropFilter: "blur(18px)",
+    padding: "45px",
+    borderRadius: "20px",
+    width: "380px",
+    boxShadow: "0 25px 60px rgba(0,0,0,0.4)",
+    border: "1px solid rgba(255,255,255,0.3)",
     textAlign: "center"
   },
+
   input: {
     width: "100%",
     padding: "12px",
     marginBottom: "15px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px"
+    borderRadius: "10px",
+    border: "1px solid rgba(255,255,255,0.4)",
+    background: "rgba(255,255,255,0.2)",
+    color: "#fff",
+    fontSize: "14px",
+    outline: "none"
   },
+
   button: {
     width: "100%",
     padding: "12px",
-    borderRadius: "8px",
+    borderRadius: "10px",
     border: "none",
-    background: "#2563eb",
+    background: "linear-gradient(135deg, #2563eb, #1e40af)",
     color: "#fff",
     fontWeight: "bold",
     cursor: "pointer",
