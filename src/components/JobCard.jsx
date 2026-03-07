@@ -76,7 +76,6 @@ export default function JobCard({ job }) {
         )}
         <button style={markBtn} onClick={markApplied}>✔ Mark As Applied</button>
         <button style={copyBtn} onClick={copyJD}>📋 Copy JD</button>
-        <button style={optBtn} onClick={optimize}>⚡ Optimize</button>
 
         {(job.manual||!job.link)&&(
           <>
