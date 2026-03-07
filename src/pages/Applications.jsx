@@ -171,7 +171,7 @@ const reminderBadge={
 };
 
 const card={
-  background:"#fff",
+  background: document.body.classList.contains("dark") ? "#111827" : "#fff",
   padding:"14px",
   borderRadius:"10px",
   marginTop:"10px",
