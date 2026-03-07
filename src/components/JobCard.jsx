@@ -88,7 +88,13 @@ export default function JobCard({ job }) {
   );
 }
 
-const card={background:"#fff",padding:"16px",borderRadius:"12px",boxShadow:"0 4px 12px rgba(0,0,0,0.06)",width:"280px"};
+const card={
+  background: document.body.classList.contains("dark") ? "#111827" : "#fff",
+  padding:"16px",
+  borderRadius:"12px",
+  boxShadow:"0 4px 12px rgba(0,0,0,0.06)",
+  width:"280px"
+};
 const btnRow={marginTop:"10px",display:"flex",gap:"6px",flexWrap:"wrap"};
 const scoreBox={background:"#f1f5f9",padding:"6px",borderRadius:"6px",margin:"6px 0"};
 const applyBtn={background:"#2563eb",color:"#fff",border:"none",padding:"6px 10px",borderRadius:"6px"};
