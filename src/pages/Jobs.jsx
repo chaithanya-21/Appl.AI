@@ -4,7 +4,6 @@ import { useStore } from "../store/useStore";
 import JobCard from "../components/JobCard";
 import { fetchJobs } from "../services/fetchJobs";
 
-// ✅ NEW: import state + mapping
 const INDIAN_STATES = [
   "All","Andhra Pradesh","Telangana","Karnataka","Tamil Nadu",
   "Maharashtra","Delhi","Gujarat","Uttar Pradesh","West Bengal","Haryana"
@@ -35,8 +34,6 @@ export default function Jobs(){
   const [page,setPage] = useState(1);
   const [search,setSearch] = useState("");
   const [type,setType] = useState("all");
-
-  // ✅ NEW: state filter
   const [stateFilter,setStateFilter] = useState("All");
 
   const pageSize=6;
@@ -47,7 +44,7 @@ export default function Jobs(){
   const filtered = useMemo(()=>{
     let list = liveJobs;
 
-    // ---------------- SEARCH FILTER ----------------
+    // 🔍 SEARCH
     if(search.trim()){
       const terms = search.toLowerCase().split(" ").filter(Boolean);
       list = list.filter(j=>{
@@ -56,33 +53,31 @@ export default function Jobs(){
       });
     }
 
-    // ---------------- WORK TYPE FILTER ----------------
-if(type !== "all"){
-  list = list.filter(j => {
-    if(type === "remote") return j.workType === "remote";
-    if(type === "onsite") return j.workType === "onsite";
-    return true; // hybrid fallback
-  });
-}
+    // 🏢 WORK TYPE (FIXED)
+    if(type !== "all"){
+      list = list.filter(j => {
+        if(type === "remote") return j.workType === "remote";
+        if(type === "onsite") return j.workType === "onsite";
+        return true;
+      });
+    }
 
-    // ---------------- ✅ STATE FILTER ----------------
+    // 📍 STATE FILTER (FIXED)
     if(stateFilter !== "All"){
       list = list.filter(j=>{
         const city = (j.location || "").split(",")[0].toLowerCase();
-const city = (j.location || "").split(",")[0].toLowerCase();
-const mappedState = CITY_TO_STATE[city];
+        const mappedState = CITY_TO_STATE[city];
 
-// fallback: also check raw location text
-return (
-  mappedState === stateFilter ||
-  (j.location || "").toLowerCase().includes(stateFilter.toLowerCase())
-);
+        return (
+          mappedState === stateFilter ||
+          (j.location || "").toLowerCase().includes(stateFilter.toLowerCase())
+        );
       });
     }
 
     return list;
 
-  },[search,type,stateFilter,liveJobs]); // ✅ added stateFilter
+  },[search,type,stateFilter,liveJobs]);
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const paginatedLive=filtered.slice((page-1)*pageSize,page*pageSize);
@@ -117,14 +112,12 @@ return (
 
       <div style={{display:"flex",gap:"10px",margin:"20px 0"}}>
 
-        {/* SEARCH */}
         <input
           placeholder="Search by role..."
           value={search}
           onChange={e=>{setSearch(e.target.value);setPage(1);}}
         />
 
-        {/* WORK TYPE */}
         <select value={type} onChange={e=>{setType(e.target.value);setPage(1);}}>
           <option value="all">All</option>
           <option value="remote">Remote</option>
@@ -132,7 +125,6 @@ return (
           <option value="onsite">Onsite</option>
         </select>
 
-        {/* ✅ NEW: STATE DROPDOWN */}
         <select
           value={stateFilter}
           onChange={e=>{setStateFilter(e.target.value);setPage(1);}}
@@ -144,12 +136,10 @@ return (
           ))}
         </select>
 
-        {/* REFRESH */}
         <button onClick={loadJobs}>
           {loading?"Refreshing…":"Refresh Jobs"}
         </button>
 
-        {/* ADD JOB */}
         <button onClick={()=>addJob({
           id:Date.now(),
           role:"New Role",
@@ -162,7 +152,6 @@ return (
         </button>
       </div>
 
-      {/* PAGINATION */}
       <div style={{marginBottom:"20px"}}>
         <button onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button>
         <span style={{margin:"0 10px"}}>Page {page} of {totalPages}</span>
@@ -171,35 +160,37 @@ return (
 
       <div style={{display:"flex",gap:"30px"}}>
 
-        {/* LIVE JOBS */}
         <div style={{flex:2}}>
           <h2>Live Jobs Feed</h2>
           <div style={{display:"flex",gap:"16px",flexWrap:"wrap"}}>
-            {paginatedLive.map(j=>(
-              <div key={j.id}>
-                <JobCard job={j}/>
-                <button
-                  onClick={()=>improveResume(j)}
-                  style={{
-                    marginTop:"6px",
-                    background:"#7c3aed",
-                    color:"#fff",
-                    border:"none",
-                    padding:"6px 10px",
-                    borderRadius:"6px",
-                    cursor:"pointer"
-                  }}
-                >
-                  Improve Resume
-                </button>
-              </div>
-            ))}
+            {paginatedLive.length === 0 ? (
+              <p>No jobs found</p>
+            ) : (
+              paginatedLive.map(j=>(
+                <div key={j.id}>
+                  <JobCard job={j}/>
+                  <button
+                    onClick={()=>improveResume(j)}
+                    style={{
+                      marginTop:"6px",
+                      background:"#7c3aed",
+                      color:"#fff",
+                      border:"none",
+                      padding:"6px 10px",
+                      borderRadius:"6px",
+                      cursor:"pointer"
+                    }}
+                  >
+                    Improve Resume
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         <div style={{width:"1px",background:"#ddd"}}/>
 
-        {/* MY JOBS */}
         <div style={{flex:1}}>
           <h2>My Added Jobs</h2>
           <div style={{display:"flex",gap:"16px",flexWrap:"wrap"}}>
