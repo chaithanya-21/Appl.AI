@@ -1,6 +1,3 @@
-// -----------------------------
-// INDIAN STATES LIST
-// -----------------------------
 export const INDIAN_STATES = [
   "All",
   "Andhra Pradesh",
@@ -15,9 +12,6 @@ export const INDIAN_STATES = [
   "Haryana"
 ];
 
-// -----------------------------
-// CITY → STATE MAPPING
-// -----------------------------
 export const CITY_TO_STATE = {
   hyderabad: "Telangana",
   bangalore: "Karnataka",
