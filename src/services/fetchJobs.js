@@ -1,3 +1,6 @@
+// -----------------------------
+// FETCH JOBS (India Only)
+// -----------------------------
 export async function fetchJobs(query = "consulting") {
   const res = await fetch(
     `https://jsearch.p.rapidapi.com/search?query=${query}&num_pages=1`,
@@ -11,7 +14,7 @@ export async function fetchJobs(query = "consulting") {
 
   const data = await res.json();
 
-  // ✅ Strict India-only filter
+  // ✅ Strict India filtering
   const indiaJobs = data.data.filter(job => {
     const country = (job.job_country || "").toLowerCase();
     const location = (job.job_location || "").toLowerCase();
@@ -21,7 +24,7 @@ export async function fetchJobs(query = "consulting") {
       country === "in" ||
       country.includes("india") ||
       location.includes("india") ||
-      city.length > 0 // fallback (most Indian jobs have city)
+      city.length > 0
     );
   });
 
@@ -29,10 +32,9 @@ export async function fetchJobs(query = "consulting") {
     id: job.job_id,
     role: job.job_title || "Unknown Role",
     company: job.employer_name || "Unknown Company",
-    location:
-      job.job_city
-        ? `${job.job_city}, India`
-        : "India",
+    location: job.job_city
+      ? `${job.job_city}, India`
+      : "India",
     description: job.job_description || "No description provided",
     posted: job.job_posted_at_datetime_utc || Date.now(),
     salary:
@@ -40,8 +42,7 @@ export async function fetchJobs(query = "consulting") {
         ? `${job.job_min_salary} - ${job.job_max_salary} ${job.job_salary_currency || ""}`
         : "Salary not disclosed",
     link: job.job_apply_link,
-    workType:
-      job.job_is_remote ? "remote" : "onsite",
+    workType: job.job_is_remote ? "remote" : "onsite",
     source: job.job_publisher || "Unknown"
   }));
 }
