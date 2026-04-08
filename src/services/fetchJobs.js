@@ -1,7 +1,7 @@
-export async function fetchJobs(query="consulting") {
+export async function fetchJobs(query = "consulting") {
 
   const res = await fetch(
-    `https://jsearch.p.rapidapi.com/search?query=${query}%20India&num_pages=1`,
+    `https://jsearch.p.rapidapi.com/search?query=${query}&country=in&num_pages=1`,
     {
       headers: {
         "X-RapidAPI-Key": import.meta.env.VITE_JOBS_KEY,
@@ -12,21 +12,42 @@ export async function fetchJobs(query="consulting") {
 
   const data = await res.json();
 
-  return data.data.map(job => ({
+  // 🔹 Filter strictly for India (extra safety)
+  const filteredJobs = data.data.filter(job =>
+    job.job_country === "IN" || 
+    (job.job_country || "").toLowerCase().includes("india") ||
+    (job.job_city || "").length > 0 // most Indian listings have city
+  );
+
+  return filteredJobs.map(job => ({
     id: job.job_id,
+
     role: job.job_title || "Unknown Role",
+
     company: job.employer_name || "Unknown Company",
-    location: job.job_city || job.job_country || "Remote/Unspecified",
+
+    location:
+      job.job_city
+        ? `${job.job_city}, India`
+        : "India",
+
     description: job.job_description || "No description provided",
+
     posted: job.job_posted_at_datetime_utc || Date.now(),
+
     salary:
       job.job_min_salary && job.job_max_salary
         ? `${job.job_min_salary} - ${job.job_max_salary} ${job.job_salary_currency || ""}`
         : "Salary not disclosed",
+
     link: job.job_apply_link,
+
     workType:
-      (job.job_employment_type || "").toLowerCase().includes("remote")
+      (job.job_is_remote || false)
         ? "remote"
-        : "onsite"
+        : "onsite",
+
+    // 🔥 BONUS: Source (if available)
+    source: job.job_publisher || "Unknown"
   }));
 }
