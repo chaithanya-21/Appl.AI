@@ -4,6 +4,9 @@ import { useStore } from "../store/useStore";
 import JobCard from "../components/JobCard";
 import { fetchJobs } from "../services/fetchJobs";
 
+// ✅ NEW: import state + mapping
+import { INDIAN_STATES, CITY_TO_STATE } from "../utils/locationFilter";
+
 export default function Jobs(){
 
   const navigate = useNavigate();
@@ -14,6 +17,9 @@ export default function Jobs(){
   const [search,setSearch] = useState("");
   const [type,setType] = useState("all");
 
+  // ✅ NEW: state filter
+  const [stateFilter,setStateFilter] = useState("All");
+
   const pageSize=6;
 
   const myJobs = jobs.filter(j=>j.manual||!j.link);
@@ -22,6 +28,7 @@ export default function Jobs(){
   const filtered = useMemo(()=>{
     let list = liveJobs;
 
+    // ---------------- SEARCH FILTER ----------------
     if(search.trim()){
       const terms = search.toLowerCase().split(" ").filter(Boolean);
       list = list.filter(j=>{
@@ -30,14 +37,26 @@ export default function Jobs(){
       });
     }
 
+    // ---------------- WORK TYPE FILTER ----------------
     if(type!=="all"){
       list=list.filter(j=>
-        (j.location||"").toLowerCase().includes(type)
+        (j.workType||"").toLowerCase().includes(type)
       );
     }
 
+    // ---------------- ✅ STATE FILTER ----------------
+    if(stateFilter !== "All"){
+      list = list.filter(j=>{
+        const city = (j.location || "").split(",")[0].toLowerCase();
+        const state = CITY_TO_STATE[city];
+
+        return state === stateFilter;
+      });
+    }
+
     return list;
-  },[search,type,liveJobs]);
+
+  },[search,type,stateFilter,liveJobs]); // ✅ added stateFilter
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const paginatedLive=filtered.slice((page-1)*pageSize,page*pageSize);
@@ -53,7 +72,7 @@ export default function Jobs(){
   async function loadJobs(){
     setLoading(true);
     try{
-      const live=await fetchJobs("consulting remote");
+      const live=await fetchJobs("consulting remote India"); // ✅ improved query
       const ids=new Set(jobs.map(j=>j.id));
       live.forEach(j=>!ids.has(j.id)&&addJob(j));
     }catch(e){console.error(e)}
@@ -71,12 +90,15 @@ export default function Jobs(){
       <h1>Job Board</h1>
 
       <div style={{display:"flex",gap:"10px",margin:"20px 0"}}>
+
+        {/* SEARCH */}
         <input
           placeholder="Search by role..."
           value={search}
           onChange={e=>{setSearch(e.target.value);setPage(1);}}
         />
 
+        {/* WORK TYPE */}
         <select value={type} onChange={e=>{setType(e.target.value);setPage(1);}}>
           <option value="all">All</option>
           <option value="remote">Remote</option>
@@ -84,10 +106,24 @@ export default function Jobs(){
           <option value="onsite">Onsite</option>
         </select>
 
+        {/* ✅ NEW: STATE DROPDOWN */}
+        <select
+          value={stateFilter}
+          onChange={e=>{setStateFilter(e.target.value);setPage(1);}}
+        >
+          {INDIAN_STATES.map(state=>(
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
+
+        {/* REFRESH */}
         <button onClick={loadJobs}>
           {loading?"Refreshing…":"Refresh Jobs"}
         </button>
 
+        {/* ADD JOB */}
         <button onClick={()=>addJob({
           id:Date.now(),
           role:"New Role",
@@ -100,6 +136,7 @@ export default function Jobs(){
         </button>
       </div>
 
+      {/* PAGINATION */}
       <div style={{marginBottom:"20px"}}>
         <button onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button>
         <span style={{margin:"0 10px"}}>Page {page} of {totalPages}</span>
@@ -108,6 +145,7 @@ export default function Jobs(){
 
       <div style={{display:"flex",gap:"30px"}}>
 
+        {/* LIVE JOBS */}
         <div style={{flex:2}}>
           <h2>Live Jobs Feed</h2>
           <div style={{display:"flex",gap:"16px",flexWrap:"wrap"}}>
@@ -135,6 +173,7 @@ export default function Jobs(){
 
         <div style={{width:"1px",background:"#ddd"}}/>
 
+        {/* MY JOBS */}
         <div style={{flex:1}}>
           <h2>My Added Jobs</h2>
           <div style={{display:"flex",gap:"16px",flexWrap:"wrap"}}>
