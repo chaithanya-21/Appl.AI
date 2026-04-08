@@ -57,19 +57,26 @@ export default function Jobs(){
     }
 
     // ---------------- WORK TYPE FILTER ----------------
-    if(type!=="all"){
-      list=list.filter(j=>
-        (j.workType||"").toLowerCase().includes(type)
-      );
-    }
+if(type !== "all"){
+  list = list.filter(j => {
+    if(type === "remote") return j.workType === "remote";
+    if(type === "onsite") return j.workType === "onsite";
+    return true; // hybrid fallback
+  });
+}
 
     // ---------------- ✅ STATE FILTER ----------------
     if(stateFilter !== "All"){
       list = list.filter(j=>{
         const city = (j.location || "").split(",")[0].toLowerCase();
-        const state = CITY_TO_STATE[city];
+const city = (j.location || "").split(",")[0].toLowerCase();
+const mappedState = CITY_TO_STATE[city];
 
-        return state === stateFilter;
+// fallback: also check raw location text
+return (
+  mappedState === stateFilter ||
+  (j.location || "").toLowerCase().includes(stateFilter.toLowerCase())
+);
       });
     }
 
@@ -91,7 +98,7 @@ export default function Jobs(){
   async function loadJobs(){
     setLoading(true);
     try{
-      const live=await fetchJobs("consulting remote India"); // ✅ improved query
+      const live = await fetchJobs("consulting");
       const ids=new Set(jobs.map(j=>j.id));
       live.forEach(j=>!ids.has(j.id)&&addJob(j));
     }catch(e){console.error(e)}
