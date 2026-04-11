@@ -52,3 +52,98 @@ npm install
 ### 3. Set environment variables
 
 Create a `.env` file in the root:
+
+VITE_JOBS_KEY=your_rapidapi_key_here
+VITE_ANTHROPIC_KEY=your_anthropic_key_here
+
+- Get a free **JSearch API** key at [rapidapi.com](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) (10 req/month free, $10/month for 200 req)
+- Get an **Anthropic API** key at [console.anthropic.com](https://console.anthropic.com)
+
+### 4. Install backend dependencies
+
+```bash
+cd backend
+npm install
+```
+
+### 5. Set backend environment variables
+
+Create `backend/.env`:
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+
+### 6. Run locally
+
+```bash
+# Terminal 1 — frontend
+npm run dev
+
+# Terminal 2 — backend
+cd backend && node server.js
+```
+
+---
+
+## Deploying to Render
+
+### Frontend (Static Site)
+- **Build command:** `npm run build`
+- **Publish directory:** `dist`
+- **Environment variables:** Add `VITE_JOBS_KEY` and `VITE_ANTHROPIC_KEY`
+
+> ⚠️ Vite bakes `VITE_` variables at build time. After adding or changing them in Render, trigger a new deploy.
+
+### Backend (Web Service)
+- **Root directory:** `backend`
+- **Build command:** `npm install`
+- **Start command:** `node server.js`
+- **Environment variables:** Add `MONGODB_URI` and `JWT_SECRET`
+
+---
+
+## User Journey
+
+1. **Sign up / Log in** → auth handled by the Express backend
+2. **Upload resume** in Career Center → unlocks AI match scores
+3. **Browse Job Board** → jobs auto-load for India (30 days)
+4. **Star jobs** you like → filter by ⭐ Starred only
+5. **Mark Applied** on a job card → moves it to your Applications Kanban
+6. **Set interview & follow-up dates** inside each application card
+7. **Dashboard** surfaces today's follow-ups, interviews, and top job picks
+8. **AI optimise** your resume for any job with the ✨ sparkle button
+9. **Refresh daily** to pull new listings — duplicates are filtered automatically
+
+---
+
+## Project Structure
+
+Appl.AI/
+├── src/
+│   ├── pages/
+│   │   ├── Dashboard.jsx       # CV-style command centre
+│   │   ├── Jobs.jsx            # Live job board + filters
+│   │   ├── Applications.jsx    # Kanban application tracker
+│   │   ├── Outreach.jsx        # AI career centre
+│   │   ├── Login.jsx
+│   │   └── Signup.jsx
+│   ├── components/
+│   │   ├── JobCard.jsx         # Individual job card with apply/star/AI buttons
+│   │   └── ...
+│   ├── services/
+│   │   ├── fetchJobs.js        # JSearch API integration (India, 30 days)
+│   │   └── aiService.js        # Anthropic Claude integration
+│   ├── store/
+│   │   └── useStore.js         # Zustand store (jobs, applications, persistence)
+│   └── MainApp.jsx             # Layout, sidebar, routing, user guide
+├── backend/
+│   ├── server.js
+│   ├── routes/auth.js
+│   └── controllers/authController.js
+└── README.md
+
+
+---
+
+## License
+
+MIT
