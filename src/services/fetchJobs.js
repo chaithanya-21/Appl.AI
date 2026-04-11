@@ -1,26 +1,10 @@
-// ─────────────────────────────────────────────
-// FETCH JOBS  —  India Only
-// ─────────────────────────────────────────────
-
-const INDIA_SIGNALS = [
-  "india","bangalore","bengaluru","hyderabad","mumbai","chennai",
-  "pune","delhi","gurgaon","gurugram","noida","kolkata","ahmedabad",
-  "visakhapatnam","vijayawada","kochi","jaipur","chandigarh",
-  "coimbatore","indore","nagpur","surat","lucknow","bhopal"
-];
-
-function isIndianJob(job) {
-  const country  = (job.job_country  || "").toLowerCase().trim();
-  const location = (job.job_location || "").toLowerCase();
-  const city     = (job.job_city     || "").toLowerCase();
-  const state    = (job.job_state    || "").toLowerCase();
-
-  if (country === "in" || country === "india") return true;
-  if (location.includes("india")) return true;
-
-  const combined = city + " " + state + " " + location;
-  return INDIA_SIGNALS.some(function(s) { return combined.includes(s); });
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// FETCH JOBS  —  India
+//
+// KEY FIX: The previous isIndianJob() post-filter was rejecting real Indian
+// jobs (e.g. "Bangalore, Karnataka" has no "India" string → got filtered out).
+// We already pass country=in to the API, so we trust those results directly.
+// ─────────────────────────────────────────────────────────────────────────────
 
 function detectWorkType(job) {
   const title = (job.job_title       || "").toLowerCase();
@@ -29,12 +13,13 @@ function detectWorkType(job) {
   if (job.job_is_remote) return "remote";
 
   if (
-    title.includes("hybrid") ||
+    title.includes("hybrid")       ||
     desc.includes("hybrid work")   ||
     desc.includes("hybrid model")  ||
     desc.includes("wfh 2")         ||
     desc.includes("2 days remote") ||
-    desc.includes("3 days remote")
+    desc.includes("3 days remote") ||
+    desc.includes("work from home 2")
   ) return "hybrid";
 
   return "onsite";
@@ -44,10 +29,10 @@ function extractExperience(job) {
   const title = (job.job_title       || "").toLowerCase();
   const desc  = (job.job_description || "").toLowerCase();
 
-  if (title.includes("senior") || title.includes("sr.") || desc.includes("5+ years") || desc.includes("7+ years")) return "senior";
-  if (title.includes("lead")   || title.includes("manager") || title.includes("head of")) return "lead";
-  if (title.includes("junior") || title.includes("jr.")   || desc.includes("0-2 years") || desc.includes("fresher")) return "junior";
-  if (desc.includes("2+ years") || desc.includes("3+ years") || title.includes("mid")) return "mid";
+  if (title.includes("senior") || title.includes("sr.") || desc.includes("5+ years") || desc.includes("7+ years") || desc.includes("8+ years")) return "senior";
+  if (title.includes("lead")   || title.includes("manager") || title.includes("head of") || title.includes("principal")) return "lead";
+  if (title.includes("junior") || title.includes("jr.")     || desc.includes("0-2 years") || desc.includes("fresher") || desc.includes("entry level")) return "junior";
+  if (desc.includes("2+ years") || desc.includes("3+ years") || desc.includes("4+ years") || title.includes("mid")) return "mid";
 
   return "any";
 }
@@ -56,12 +41,12 @@ function extractSkillTags(job) {
   const text = ((job.job_title || "") + " " + (job.job_description || "")).toLowerCase();
 
   const SKILLS = [
-    "react","node","python","java","javascript","typescript","sql","aws",
-    "azure","gcp","docker","kubernetes","terraform","mongodb","postgresql",
-    "graphql","django","flask","angular","vue","spring",
-    "machine learning","deep learning","data science","analytics",
-    "power bi","tableau","salesforce","figma","scrum","agile","devops",
-    "ios","android","flutter","go","rust"
+    "react", "node", "python", "java", "javascript", "typescript", "sql", "aws",
+    "azure", "gcp", "docker", "kubernetes", "terraform", "mongodb", "postgresql",
+    "graphql", "django", "flask", "angular", "vue", "spring", "next.js",
+    "machine learning", "deep learning", "data science", "analytics",
+    "power bi", "tableau", "salesforce", "figma", "scrum", "agile", "devops",
+    "ios", "android", "flutter", "go", "rust", "c++", "c#", "excel", "sap"
   ];
 
   const found = [];
@@ -83,37 +68,51 @@ function formatSalary(job) {
   return "Salary not disclosed";
 }
 
-// Broad query set for Indian job market coverage — one string per line, no concatenation
+function buildLocation(job) {
+  const city  = (job.job_city  || "").trim();
+  const state = (job.job_state || "").trim();
+  if (city && state) return city + ", " + state;
+  if (city)          return city;
+  if (state)         return state;
+  return "India";
+}
+
+// Wide variety of roles to maximise coverage of Indian openings
 const SEARCH_QUERIES = [
-  "software engineer India",
-  "product manager India",
-  "data analyst India",
-  "business analyst India",
-  "consulting jobs India"
+  "software engineer jobs India",
+  "product manager jobs India",
+  "data analyst jobs India",
+  "business analyst jobs India",
+  "marketing manager jobs India",
+  "finance analyst jobs India",
+  "operations manager jobs India",
+  "full stack developer India"
 ];
 
 export async function fetchJobs(customQuery, options) {
   const pages      = (options && options.pages)      ? options.pages      : 1;
   const datePosted = (options && options.datePosted) ? options.datePosted : "month";
 
-  // Assign env var to a plain const before use — avoids esbuild define edge-cases
   const apiKey = import.meta.env.VITE_JOBS_KEY;
 
   if (!apiKey) {
-    throw new Error("Missing VITE_JOBS_KEY — add it to Render environment variables.");
+    throw new Error(
+      "Missing VITE_JOBS_KEY — add it to your Render environment variables."
+    );
   }
 
-  const queries = customQuery ? [customQuery] : SEARCH_QUERIES;
-  const allJobs = [];
-  const seenIds = new Set();
+  const queries  = customQuery ? [customQuery] : SEARCH_QUERIES;
+  const allJobs  = [];
+  const seenIds  = new Set();
 
   for (const q of queries) {
     try {
       const params = [
-        "query="      + encodeURIComponent(q),
-        "num_pages="  + String(pages),
+        "query="       + encodeURIComponent(q),
+        "num_pages="   + String(pages),
         "date_posted=" + datePosted,
-        "country=in"
+        "country=in",
+        "language=en"
       ].join("&");
 
       const res = await fetch(
@@ -126,35 +125,35 @@ export async function fetchJobs(customQuery, options) {
         }
       );
 
-      if (!res.ok) continue;
+      if (!res.ok) {
+        console.warn("fetchJobs: HTTP " + res.status + " for query:", q);
+        continue;
+      }
 
       const data = await res.json();
-      if (!data || !data.data) continue;
 
-      for (const job of data.data.filter(isIndianJob)) {
+      // API returns { status, data: [...] }
+      if (!data || !Array.isArray(data.data)) continue;
+
+      for (const job of data.data) {
+        if (!job.job_id) continue;
         if (seenIds.has(job.job_id)) continue;
         seenIds.add(job.job_id);
 
-        const city  = job.job_city  || "";
-        const state = job.job_state || "";
-        const locationStr = city
-          ? (state ? city + ", " + state : city)
-          : "India";
-
         allJobs.push({
           id:              job.job_id,
-          role:            job.job_title         || "Unknown Role",
-          company:         job.employer_name     || "Unknown Company",
-          location:        locationStr,
-          description:     job.job_description  || "No description provided",
+          role:            job.job_title        || "Unknown Role",
+          company:         job.employer_name    || "Unknown Company",
+          location:        buildLocation(job),
+          description:     job.job_description || "No description provided",
           posted:          job.job_posted_at_datetime_utc || new Date().toISOString(),
           salary:          formatSalary(job),
-          link:            job.job_apply_link    || null,
+          link:            job.job_apply_link   || null,
           workType:        detectWorkType(job),
           experienceLevel: extractExperience(job),
           skills:          extractSkillTags(job),
-          source:          job.job_publisher     || "Unknown",
-          logo:            job.employer_logo     || null
+          source:          job.job_publisher    || "Unknown",
+          logo:            job.employer_logo    || null
         });
       }
     } catch (err) {
