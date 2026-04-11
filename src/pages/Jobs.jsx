@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import JobCard from "../components/JobCard";
@@ -47,16 +47,21 @@ export default function Jobs() {
   const [workType, setWorkType] = useState("All Types");
   const [stateFilter, setStateFilter] = useState("All States");
   const [expFilter, setExpFilter] = useState("All Levels");
-  const [salaryFilter, setSalaryFilter] = useState(false); // true = only jobs with disclosed salary
+  const [salaryFilter, setSalaryFilter] = useState(false);
   const [priorityOnly, setPriorityOnly] = useState(false);
 
   // Pagination & UI state
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
-  const [activeTab, setActiveTab] = useState("live"); // "live" | "saved"
+  const [errorMsg, setErrorMsg] = useState(""); // persistent error banner
+  const [activeTab, setActiveTab] = useState("live");
   const [showAddModal, setShowAddModal] = useState(false);
   const [newJob, setNewJob] = useState({ role: "", company: "", location: "", description: "" });
+
+  // Use a ref to always read the latest jobs inside loadJobs without re-creating the callback
+  const jobsRef = useRef(jobs);
+  useEffect(() => { jobsRef.current = jobs; }, [jobs]);
 
   const myJobs = jobs.filter(j => j.manual || !j.link);
   const liveJobs = jobs.filter(j => !j.manual && j.link);
@@ -120,15 +125,17 @@ export default function Jobs() {
   useEffect(() => {
     const loaded = sessionStorage.getItem("jobsLoaded");
     if (!loaded) loadJobs();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Load jobs ───────────────────────────────────────────────── */
   const loadJobs = useCallback(async () => {
     setLoading(true);
+    setErrorMsg("");
     setLoadingMsg("Fetching latest jobs from India…");
 
     try {
-      const existingIds = new Set(jobs.map(j => j.id));
+      // Use ref so we always have the latest jobs list without stale closure
+      const existingIds = new Set(jobsRef.current.map(j => j.id));
       const live = await fetchJobs(null, { pages: 1 });
 
       let added = 0;
@@ -141,15 +148,33 @@ export default function Jobs() {
       }
 
       setLoadingMsg(added > 0 ? `✓ ${added} new jobs loaded` : "✓ Feed is up to date");
+      // Only cache success — never cache a failed/empty load
       sessionStorage.setItem("jobsLoaded", "true");
+      setTimeout(() => setLoadingMsg(""), 3000);
     } catch (e) {
-      console.error(e);
-      setLoadingMsg("⚠️ Could not load jobs. Check your API key.");
+      console.error("loadJobs error:", e);
+
+      // Show a persistent, actionable error banner
+      let userMsg = "⚠️ Could not load jobs.";
+      if (e.message.includes("MISSING_API_KEY")) {
+        userMsg = "⚠️ No API key found. Please add VITE_JOBS_KEY to your Render environment variables. Get a free key at rapidapi.com → JSearch API.";
+      } else if (e.message.includes("INVALID_API_KEY")) {
+        userMsg = "⚠️ Your API key was rejected. Please check VITE_JOBS_KEY in Render — it may be expired or copied incorrectly.";
+      } else if (e.message.includes("QUOTA_EXCEEDED")) {
+        userMsg = "⚠️ API quota exceeded. Your free RapidAPI plan has a limit of 10 requests/month. Upgrade at rapidapi.com or wait until your quota resets.";
+      } else if (e.message.includes("FETCH_FAILED")) {
+        userMsg = "⚠️ All job queries failed. Check your network connection and that VITE_JOBS_KEY is set correctly in Render.";
+      } else {
+        userMsg = "⚠️ Could not load jobs: " + e.message;
+      }
+
+      setErrorMsg(userMsg);
+      setLoadingMsg("");
+      // Do NOT set sessionStorage on failure — so next page load will retry
     } finally {
       setLoading(false);
-      setTimeout(() => setLoadingMsg(""), 3000);
     }
-  }, [jobs, addJob]);
+  }, [addJob]); // removed `jobs` dependency — using ref instead
 
   function handleRefresh() {
     sessionStorage.removeItem("jobsLoaded");
@@ -206,6 +231,14 @@ export default function Jobs() {
           </button>
         </div>
       </div>
+
+      {/* ── Error Banner ── */}
+      {errorMsg && (
+        <div style={styles.errorBanner}>
+          <span style={{ flex: 1 }}>{errorMsg}</span>
+          <button onClick={() => setErrorMsg("")} style={styles.errorDismiss}>✕</button>
+        </div>
+      )}
 
       {/* ── Tabs ── */}
       <div style={styles.tabs}>
@@ -335,9 +368,11 @@ export default function Jobs() {
           <div style={styles.emptyIcon}>🔍</div>
           <h3 style={styles.emptyTitle}>No jobs found</h3>
           <p style={styles.emptyText}>
-            {hasActiveFilters
+            {errorMsg
+              ? "Fix the error above and click Refresh to load jobs."
+              : hasActiveFilters
               ? "Try adjusting your filters or clearing the search."
-              : "Click Refresh to load the latest jobs."}
+              : "Click Refresh to load the latest jobs from India."}
           </p>
           {hasActiveFilters && (
             <button
@@ -352,6 +387,11 @@ export default function Jobs() {
               style={styles.refreshBtn}
             >
               Clear Filters
+            </button>
+          )}
+          {!hasActiveFilters && !loading && (
+            <button onClick={handleRefresh} style={styles.refreshBtn}>
+              ↻ Load Jobs
             </button>
           )}
         </div>
@@ -507,6 +547,32 @@ const styles = {
     fontSize: "12px",
     color: "var(--text-secondary)",
     fontStyle: "italic"
+  },
+
+  errorBanner: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "12px",
+    padding: "14px 18px",
+    background: "rgba(255,59,48,0.12)",
+    border: "1px solid rgba(255,59,48,0.35)",
+    borderRadius: "14px",
+    color: "#FF453A",
+    fontSize: "13px",
+    fontWeight: "500",
+    lineHeight: "1.5",
+    marginBottom: "20px"
+  },
+
+  errorDismiss: {
+    background: "transparent",
+    border: "none",
+    color: "#FF453A",
+    cursor: "pointer",
+    fontSize: "14px",
+    padding: "0 4px",
+    flexShrink: 0,
+    boxShadow: "none"
   },
 
   refreshBtn: {
@@ -781,7 +847,6 @@ const styles = {
     animation: "spin 0.6s linear infinite"
   },
 
-  // Modal
   modalOverlay: {
     position: "fixed",
     inset: 0,
