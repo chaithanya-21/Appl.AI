@@ -1,9 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// FETCH JOBS  —  India
-//
-// KEY FIX: The previous isIndianJob() post-filter was rejecting real Indian
-// jobs (e.g. "Bangalore, Karnataka" has no "India" string → got filtered out).
-// We already pass country=in to the API, so we trust those results directly.
+// FETCH JOBS  —  India (JSearch via RapidAPI)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function detectWorkType(job) {
@@ -95,15 +91,18 @@ export async function fetchJobs(customQuery, options) {
 
   const apiKey = import.meta.env.VITE_JOBS_KEY;
 
-  if (!apiKey) {
+  if (!apiKey || apiKey.trim() === "") {
     throw new Error(
-      "Missing VITE_JOBS_KEY — add it to your Render environment variables."
+      "MISSING_API_KEY: Add VITE_JOBS_KEY to your Render environment variables. " +
+      "Get a free key at rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch"
     );
   }
 
   const queries  = customQuery ? [customQuery] : SEARCH_QUERIES;
   const allJobs  = [];
   const seenIds  = new Set();
+  let totalFetched = 0;
+  let failCount = 0;
 
   for (const q of queries) {
     try {
@@ -119,21 +118,40 @@ export async function fetchJobs(customQuery, options) {
         "https://jsearch.p.rapidapi.com/search?" + params,
         {
           headers: {
-            "X-RapidAPI-Key":  apiKey,
+            "X-RapidAPI-Key":  apiKey.trim(),
             "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
           }
         }
       );
 
+      // Surface HTTP errors clearly
       if (!res.ok) {
-        console.warn("fetchJobs: HTTP " + res.status + " for query:", q);
+        const errText = await res.text().catch(() => "");
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(
+            "INVALID_API_KEY: Your VITE_JOBS_KEY was rejected (HTTP " + res.status + "). " +
+            "Check the key on rapidapi.com — it may be expired or wrong."
+          );
+        }
+        if (res.status === 429) {
+          throw new Error(
+            "QUOTA_EXCEEDED: You've hit the RapidAPI rate limit. " +
+            "Upgrade your plan at rapidapi.com or wait until your quota resets."
+          );
+        }
+        console.warn("fetchJobs: HTTP " + res.status + " for query:", q, errText);
+        failCount++;
         continue;
       }
 
       const data = await res.json();
+      totalFetched++;
 
       // API returns { status, data: [...] }
-      if (!data || !Array.isArray(data.data)) continue;
+      if (!data || !Array.isArray(data.data)) {
+        console.warn("fetchJobs: unexpected response shape for query:", q, data);
+        continue;
+      }
 
       for (const job of data.data) {
         if (!job.job_id) continue;
@@ -157,8 +175,21 @@ export async function fetchJobs(customQuery, options) {
         });
       }
     } catch (err) {
-      console.warn("fetchJobs: query failed \u2014", q, err.message);
+      // Re-throw critical errors (bad key, quota) so Jobs.jsx can show them
+      if (err.message.startsWith("MISSING_API_KEY") || err.message.startsWith("INVALID_API_KEY") || err.message.startsWith("QUOTA_EXCEEDED")) {
+        throw err;
+      }
+      console.warn("fetchJobs: query failed —", q, err.message);
+      failCount++;
     }
+  }
+
+  // If every single query failed, surface it
+  if (totalFetched === 0 && failCount > 0) {
+    throw new Error(
+      "FETCH_FAILED: All job queries failed. This is usually a network issue or " +
+      "your RapidAPI key is invalid. Check the browser console for details."
+    );
   }
 
   return allJobs;
