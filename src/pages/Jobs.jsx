@@ -1,40 +1,41 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import JobCard from "../components/JobCard";
 import { fetchJobs } from "../services/fetchJobs";
 
-/* ─── Constants ────────────────────────────────────────────────── */
+/* ─── Constants ─────────────────────────────────────────────────── */
 
 const INDIAN_STATES = [
   "All States",
-  "Andhra Pradesh", "Telangana", "Karnataka", "Tamil Nadu",
-  "Maharashtra", "Delhi", "Gujarat", "Uttar Pradesh",
-  "West Bengal", "Haryana", "Kerala", "Rajasthan",
-  "Madhya Pradesh", "Punjab", "Odisha"
+  "Andhra Pradesh","Telangana","Karnataka","Tamil Nadu",
+  "Maharashtra","Delhi","Gujarat","Uttar Pradesh",
+  "West Bengal","Haryana","Kerala","Rajasthan",
+  "Madhya Pradesh","Punjab","Odisha","Bihar"
 ];
 
 const CITY_TO_STATE = {
-  hyderabad: "Telangana", secunderabad: "Telangana",
-  bangalore: "Karnataka", bengaluru: "Karnataka",
-  chennai: "Tamil Nadu", coimbatore: "Tamil Nadu",
-  mumbai: "Maharashtra", pune: "Maharashtra", nagpur: "Maharashtra",
-  delhi: "Delhi", "new delhi": "Delhi",
-  gurgaon: "Haryana", gurugram: "Haryana", faridabad: "Haryana",
-  noida: "Uttar Pradesh", agra: "Uttar Pradesh", lucknow: "Uttar Pradesh",
-  kolkata: "West Bengal",
-  ahmedabad: "Gujarat", surat: "Gujarat",
-  visakhapatnam: "Andhra Pradesh", vijayawada: "Andhra Pradesh",
-  kochi: "Kerala", thiruvananthapuram: "Kerala",
-  jaipur: "Rajasthan",
-  chandigarh: "Punjab",
-  indore: "Madhya Pradesh", bhopal: "Madhya Pradesh",
-  bhubaneswar: "Odisha"
+  hyderabad:"Telangana", secunderabad:"Telangana",
+  bangalore:"Karnataka", bengaluru:"Karnataka",
+  chennai:"Tamil Nadu",  coimbatore:"Tamil Nadu",
+  mumbai:"Maharashtra",  pune:"Maharashtra",       nagpur:"Maharashtra",
+  delhi:"Delhi",         "new delhi":"Delhi",
+  gurgaon:"Haryana",     gurugram:"Haryana",       faridabad:"Haryana",
+  noida:"Uttar Pradesh", lucknow:"Uttar Pradesh",
+  kolkata:"West Bengal",
+  ahmedabad:"Gujarat",   surat:"Gujarat",
+  visakhapatnam:"Andhra Pradesh", vijayawada:"Andhra Pradesh",
+  kochi:"Kerala",        thiruvananthapuram:"Kerala",
+  jaipur:"Rajasthan",
+  chandigarh:"Punjab",
+  indore:"Madhya Pradesh", bhopal:"Madhya Pradesh",
+  bhubaneswar:"Odisha",
+  patna:"Bihar"
 };
 
-const WORK_TYPES = ["All Types", "Remote", "Hybrid", "Onsite"];
-const EXP_LEVELS = ["All Levels", "Junior", "Mid", "Senior", "Lead"];
-const PAGE_SIZE = 9;
+const WORK_TYPES  = ["All Types","Remote","Hybrid","Onsite"];
+const EXP_LEVELS  = ["All Levels","Junior","Mid","Senior","Lead"];
+const PAGE_SIZE   = 9;
 
 /* ─── Component ─────────────────────────────────────────────────── */
 
@@ -43,40 +44,33 @@ export default function Jobs() {
   const { jobs, addJob } = useStore();
 
   // Filters
-  const [search, setSearch] = useState("");
-  const [workType, setWorkType] = useState("All Types");
-  const [stateFilter, setStateFilter] = useState("All States");
-  const [expFilter, setExpFilter] = useState("All Levels");
+  const [search,       setSearch]       = useState("");
+  const [workType,     setWorkType]     = useState("All Types");
+  const [stateFilter,  setStateFilter]  = useState("All States");
+  const [expFilter,    setExpFilter]    = useState("All Levels");
   const [salaryFilter, setSalaryFilter] = useState(false);
   const [priorityOnly, setPriorityOnly] = useState(false);
 
-  // Pagination & UI state
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [loadingMsg, setLoadingMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState(""); // persistent error banner
-  const [activeTab, setActiveTab] = useState("live");
+  // UI
+  const [page,         setPage]         = useState(1);
+  const [loading,      setLoading]      = useState(false);
+  const [loadingMsg,   setLoadingMsg]   = useState("");
+  const [activeTab,    setActiveTab]    = useState("live");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newJob, setNewJob] = useState({ role: "", company: "", location: "", description: "" });
+  const [newJob,       setNewJob]       = useState({ role:"", company:"", location:"", description:"" });
 
-  // Use a ref to always read the latest jobs inside loadJobs without re-creating the callback
-  const jobsRef = useRef(jobs);
-  useEffect(() => { jobsRef.current = jobs; }, [jobs]);
+  const myJobs   = jobs.filter(j =>  j.manual || !j.link);
+  const liveJobs = jobs.filter(j => !j.manual &&  j.link);
 
-  const myJobs = jobs.filter(j => j.manual || !j.link);
-  const liveJobs = jobs.filter(j => !j.manual && j.link);
-
-  /* ── Filtering ───────────────────────────────────────────────── */
+  /* ── Filtering ── */
   const filtered = useMemo(() => {
     let list = activeTab === "live" ? liveJobs : myJobs;
 
     if (search.trim()) {
       const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
       list = list.filter(j => {
-        const haystack = [j.role, j.company, j.location, j.description]
-          .join(" ")
-          .toLowerCase();
-        return terms.every(t => haystack.includes(t));
+        const hay = [j.role, j.company, j.location, j.description].join(" ").toLowerCase();
+        return terms.every(t => hay.includes(t));
       });
     }
 
@@ -86,13 +80,9 @@ export default function Jobs() {
 
     if (stateFilter !== "All States") {
       list = list.filter(j => {
-        const locationStr = (j.location || "").toLowerCase();
-        const city = locationStr.split(",")[0].trim();
-        const mappedState = CITY_TO_STATE[city];
-        return (
-          mappedState === stateFilter ||
-          locationStr.includes(stateFilter.toLowerCase())
-        );
+        const loc  = (j.location || "").toLowerCase();
+        const city = loc.split(",")[0].trim();
+        return CITY_TO_STATE[city] === stateFilter || loc.includes(stateFilter.toLowerCase());
       });
     }
 
@@ -116,27 +106,34 @@ export default function Jobs() {
   }, [search, workType, stateFilter, expFilter, salaryFilter, priorityOnly, liveJobs, myJobs, activeTab]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  /* ── Auto-reset page when filters change ────────────────────── */
-  useEffect(() => { setPage(1); }, [search, workType, stateFilter, expFilter, salaryFilter, priorityOnly, activeTab]);
+  // Reset page whenever filters change
+  useEffect(() => { setPage(1); },
+    [search, workType, stateFilter, expFilter, salaryFilter, priorityOnly, activeTab]);
 
-  /* ── Initial load ────────────────────────────────────────────── */
+  /* ── Auto-fetch on mount ─────────────────────────────────────────
+     KEY FIX: we no longer rely on sessionStorage. Instead we always
+     load if the live-jobs list is empty so jobs appear on every fresh
+     session (the old approach kept the "already loaded" flag alive
+     across soft navigations, preventing real fetches).
+  ───────────────────────────────────────────────────────────────── */
   useEffect(() => {
-    const loaded = sessionStorage.getItem("jobsLoaded");
-    if (!loaded) loadJobs();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (liveJobs.length === 0) {
+      loadJobs();
+    }
+  }, []); // run once on mount
 
-  /* ── Load jobs ───────────────────────────────────────────────── */
+  /* ── Load jobs ── */
   const loadJobs = useCallback(async () => {
+    if (loading) return; // prevent double-firing
     setLoading(true);
-    setErrorMsg("");
-    setLoadingMsg("Fetching latest jobs from India…");
+    setLoadingMsg("Fetching latest jobs across India…");
 
     try {
-      // Use ref so we always have the latest jobs list without stale closure
-      const existingIds = new Set(jobsRef.current.map(j => j.id));
-      const live = await fetchJobs(null, { pages: 1 });
+      const existingIds = new Set(jobs.map(j => j.id));
+      // pages:2 → up to 20 results per query × 8 queries = ~160 jobs per refresh
+      const live = await fetchJobs(null, { pages: 2 });
 
       let added = 0;
       for (const j of live) {
@@ -147,84 +144,58 @@ export default function Jobs() {
         }
       }
 
-      setLoadingMsg(added > 0 ? `✓ ${added} new jobs loaded` : "✓ Feed is up to date");
-      // Only cache success — never cache a failed/empty load
-      sessionStorage.setItem("jobsLoaded", "true");
-      setTimeout(() => setLoadingMsg(""), 3000);
+      setLoadingMsg(
+        added > 0
+          ? "✓ " + added + " new jobs loaded"
+          : "✓ Feed is up to date (" + live.length + " jobs found)"
+      );
     } catch (e) {
-      console.error("loadJobs error:", e);
-
-      // Show a persistent, actionable error banner
-      let userMsg = "⚠️ Could not load jobs.";
-      if (e.message.includes("MISSING_API_KEY")) {
-        userMsg = "⚠️ No API key found. Please add VITE_JOBS_KEY to your Render environment variables. Get a free key at rapidapi.com → JSearch API.";
-      } else if (e.message.includes("INVALID_API_KEY")) {
-        userMsg = "⚠️ Your API key was rejected. Please check VITE_JOBS_KEY in Render — it may be expired or copied incorrectly.";
-      } else if (e.message.includes("QUOTA_EXCEEDED")) {
-        userMsg = "⚠️ API quota exceeded. Your free RapidAPI plan has a limit of 10 requests/month. Upgrade at rapidapi.com or wait until your quota resets.";
-      } else if (e.message.includes("FETCH_FAILED")) {
-        userMsg = "⚠️ All job queries failed. Check your network connection and that VITE_JOBS_KEY is set correctly in Render.";
-      } else {
-        userMsg = "⚠️ Could not load jobs: " + e.message;
-      }
-
-      setErrorMsg(userMsg);
-      setLoadingMsg("");
-      // Do NOT set sessionStorage on failure — so next page load will retry
+      console.error(e);
+      setLoadingMsg("⚠️ Could not load jobs — check VITE_JOBS_KEY in Render settings.");
     } finally {
       setLoading(false);
+      setTimeout(() => setLoadingMsg(""), 4000);
     }
-  }, [addJob]); // removed `jobs` dependency — using ref instead
+  }, [jobs, addJob, loading]);
 
   function handleRefresh() {
-    sessionStorage.removeItem("jobsLoaded");
     loadJobs();
   }
 
   function handleAddJob() {
     if (!newJob.role.trim()) return;
     addJob({
-      id: Date.now(),
-      role: newJob.role,
-      company: newJob.company || "Unknown Company",
+      id:       Date.now(),
+      role:     newJob.role,
+      company:  newJob.company  || "Unknown Company",
       location: newJob.location || "India",
       description: newJob.description || "",
-      manual: true,
+      manual:   true,
       workType: "onsite"
     });
-    setNewJob({ role: "", company: "", location: "", description: "" });
+    setNewJob({ role:"", company:"", location:"", description:"" });
     setShowAddModal(false);
   }
 
-  const hasActiveFilters = search || workType !== "All Types" || stateFilter !== "All States" || expFilter !== "All Levels" || salaryFilter || priorityOnly;
+  const hasActiveFilters = search || workType !== "All Types" || stateFilter !== "All States" ||
+    expFilter !== "All Levels" || salaryFilter || priorityOnly;
 
-  /* ── Render ──────────────────────────────────────────────────── */
+  /* ── Render ── */
   return (
     <div style={styles.page}>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div style={styles.header}>
         <div>
           <h1 style={styles.pageTitle}>Job Board</h1>
           <p style={styles.pageSubtitle}>
-            {liveJobs.length} live jobs • {myJobs.length} saved
+            {liveJobs.length} live jobs · {myJobs.length} saved
           </p>
         </div>
         <div style={styles.headerActions}>
-          {loadingMsg && (
-            <span style={styles.loadMsg}>{loadingMsg}</span>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={loading}
-            style={styles.refreshBtn}
-          >
-            {loading ? (
-              <span style={styles.spinner} />
-            ) : (
-              "↻"
-            )}
-            {loading ? " Loading…" : " Refresh"}
+          {loadingMsg && <span style={styles.loadMsg}>{loadingMsg}</span>}
+          <button onClick={handleRefresh} disabled={loading} style={styles.refreshBtn}>
+            {loading ? <><Spinner /> Loading…</> : "↻ Refresh"}
           </button>
           <button onClick={() => setShowAddModal(true)} style={styles.addBtn}>
             + Add Job
@@ -232,59 +203,42 @@ export default function Jobs() {
         </div>
       </div>
 
-      {/* ── Error Banner ── */}
-      {errorMsg && (
-        <div style={styles.errorBanner}>
-          <span style={{ flex: 1 }}>{errorMsg}</span>
-          <button onClick={() => setErrorMsg("")} style={styles.errorDismiss}>✕</button>
-        </div>
-      )}
-
-      {/* ── Tabs ── */}
+      {/* Tabs */}
       <div style={styles.tabs}>
-        {["live", "saved"].map(tab => (
+        {["live","saved"].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            style={{
-              ...styles.tab,
-              ...(activeTab === tab ? styles.tabActive : styles.tabInactive)
-            }}
+            style={{ ...styles.tab, ...(activeTab === tab ? styles.tabActive : styles.tabInactive) }}
           >
-            {tab === "live" ? `🌐 Live Feed (${liveJobs.length})` : `📌 My Jobs (${myJobs.length})`}
+            {tab === "live"
+              ? "🌐 Live Feed (" + liveJobs.length + ")"
+              : "📌 My Jobs (" + myJobs.length + ")"}
           </button>
         ))}
       </div>
 
-      {/* ── Filters ── */}
+      {/* Filter bar */}
       <div style={styles.filterBar}>
-        {/* Search */}
         <div style={styles.searchWrapper}>
           <span style={styles.searchIcon}>🔍</span>
           <input
-            placeholder="Search role, company, or skill…"
+            placeholder="Search role, company, skill…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={styles.searchInput}
           />
           {search && (
-            <button
-              onClick={() => setSearch("")}
-              style={styles.clearBtn}
-            >✕</button>
+            <button onClick={() => setSearch("")} style={styles.clearBtn}>✕</button>
           )}
         </div>
 
-        {/* Work Type */}
         <div style={styles.filterGroup}>
           {WORK_TYPES.map(t => (
             <button
               key={t}
               onClick={() => setWorkType(t)}
-              style={{
-                ...styles.pill,
-                ...(workType === t ? styles.pillActive : styles.pillInactive)
-              }}
+              style={{ ...styles.pill, ...(workType === t ? styles.pillActive : styles.pillInactive) }}
             >
               {t === "Remote" ? "🏠 " : t === "Hybrid" ? "⚡ " : t === "Onsite" ? "🏢 " : ""}
               {t}
@@ -292,60 +246,33 @@ export default function Jobs() {
           ))}
         </div>
 
-        {/* State */}
-        <select
-          value={stateFilter}
-          onChange={e => setStateFilter(e.target.value)}
-          style={styles.select}
-        >
-          {INDIAN_STATES.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
+        <select value={stateFilter} onChange={e => setStateFilter(e.target.value)} style={styles.select}>
+          {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
 
-        {/* Experience Level */}
-        <select
-          value={expFilter}
-          onChange={e => setExpFilter(e.target.value)}
-          style={styles.select}
-        >
-          {EXP_LEVELS.map(e => (
-            <option key={e} value={e}>{e}</option>
-          ))}
+        <select value={expFilter} onChange={e => setExpFilter(e.target.value)} style={styles.select}>
+          {EXP_LEVELS.map(e => <option key={e} value={e}>{e}</option>)}
         </select>
 
-        {/* Salary toggle */}
         <button
           onClick={() => setSalaryFilter(v => !v)}
-          style={{
-            ...styles.toggleBtn,
-            ...(salaryFilter ? styles.toggleActive : styles.toggleInactive)
-          }}
+          style={{ ...styles.toggleBtn, ...(salaryFilter ? styles.toggleActive : styles.toggleInactive) }}
         >
           💰 Salary disclosed
         </button>
 
-        {/* Priority toggle */}
         <button
           onClick={() => setPriorityOnly(v => !v)}
-          style={{
-            ...styles.toggleBtn,
-            ...(priorityOnly ? styles.toggleActive : styles.toggleInactive)
-          }}
+          style={{ ...styles.toggleBtn, ...(priorityOnly ? styles.toggleActive : styles.toggleInactive) }}
         >
           ⭐ Starred only
         </button>
 
-        {/* Clear all */}
         {hasActiveFilters && (
           <button
             onClick={() => {
-              setSearch("");
-              setWorkType("All Types");
-              setStateFilter("All States");
-              setExpFilter("All Levels");
-              setSalaryFilter(false);
-              setPriorityOnly(false);
+              setSearch(""); setWorkType("All Types"); setStateFilter("All States");
+              setExpFilter("All Levels"); setSalaryFilter(false); setPriorityOnly(false);
             }}
             style={styles.clearAllBtn}
           >
@@ -354,7 +281,7 @@ export default function Jobs() {
         )}
       </div>
 
-      {/* ── Results header ── */}
+      {/* Results count */}
       <div style={styles.resultsHeader}>
         <span style={styles.resultsCount}>
           {filtered.length} result{filtered.length !== 1 ? "s" : ""}
@@ -362,48 +289,39 @@ export default function Jobs() {
         </span>
       </div>
 
-      {/* ── Job Grid ── */}
-      {paginated.length === 0 ? (
+      {/* Loading skeleton */}
+      {loading && liveJobs.length === 0 && (
+        <div style={styles.loadingState}>
+          <Spinner large />
+          <p style={styles.loadingText}>Fetching jobs from across India…</p>
+        </div>
+      )}
+
+      {/* Grid */}
+      {!loading && paginated.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>🔍</div>
           <h3 style={styles.emptyTitle}>No jobs found</h3>
           <p style={styles.emptyText}>
-            {errorMsg
-              ? "Fix the error above and click Refresh to load jobs."
-              : hasActiveFilters
-              ? "Try adjusting your filters or clearing the search."
+            {hasActiveFilters
+              ? "Try adjusting or clearing your filters."
               : "Click Refresh to load the latest jobs from India."}
           </p>
-          {hasActiveFilters && (
-            <button
-              onClick={() => {
-                setSearch("");
-                setWorkType("All Types");
-                setStateFilter("All States");
-                setExpFilter("All Levels");
-                setSalaryFilter(false);
-                setPriorityOnly(false);
-              }}
-              style={styles.refreshBtn}
-            >
-              Clear Filters
-            </button>
-          )}
-          {!hasActiveFilters && !loading && (
-            <button onClick={handleRefresh} style={styles.refreshBtn}>
-              ↻ Load Jobs
-            </button>
-          )}
+          <button onClick={hasActiveFilters
+            ? () => { setSearch(""); setWorkType("All Types"); setStateFilter("All States"); setExpFilter("All Levels"); setSalaryFilter(false); setPriorityOnly(false); }
+            : handleRefresh}
+            style={styles.refreshBtn}
+          >
+            {hasActiveFilters ? "Clear Filters" : "↻ Load Jobs"}
+          </button>
         </div>
       ) : (
         <div style={styles.grid}>
-          {paginated.map(j => (
-            <JobCard key={j.id} job={j} />
-          ))}
+          {paginated.map(j => <JobCard key={j.id} job={j} />)}
         </div>
       )}
 
-      {/* ── Pagination ── */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div style={styles.pagination}>
           <button
@@ -413,34 +331,24 @@ export default function Jobs() {
           >
             ‹ Prev
           </button>
-
           <div style={styles.pageNumbers}>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (page <= 3) {
-                pageNum = i + 1;
-              } else if (page >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = page - 2 + i;
-              }
+              let n;
+              if (totalPages <= 5)        n = i + 1;
+              else if (page <= 3)         n = i + 1;
+              else if (page >= totalPages - 2) n = totalPages - 4 + i;
+              else                        n = page - 2 + i;
               return (
                 <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  style={{
-                    ...styles.pageBtn,
-                    ...(page === pageNum ? styles.pageBtnActive : {})
-                  }}
+                  key={n}
+                  onClick={() => setPage(n)}
+                  style={{ ...styles.pageBtn, ...(page === n ? styles.pageBtnActive : {}) }}
                 >
-                  {pageNum}
+                  {n}
                 </button>
               );
             })}
           </div>
-
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
@@ -451,54 +359,32 @@ export default function Jobs() {
         </div>
       )}
 
-      {/* ── Add Job Modal ── */}
+      {/* Add Job Modal */}
       {showAddModal && (
         <div style={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2 style={{ margin: 0, fontSize: "18px" }}>Add a Job Manually</h2>
+              <h2 style={{ margin:0, fontSize:"18px", color:"var(--text-primary)" }}>Add a Job Manually</h2>
               <button onClick={() => setShowAddModal(false)} style={styles.modalClose}>✕</button>
             </div>
-
             <div style={styles.modalBody}>
               <label style={styles.label}>Job Title *</label>
-              <input
-                placeholder="e.g. Senior Product Manager"
-                value={newJob.role}
-                onChange={e => setNewJob({ ...newJob, role: e.target.value })}
-                style={styles.modalInput}
-              />
-
+              <input placeholder="e.g. Senior Product Manager" value={newJob.role}
+                onChange={e => setNewJob({...newJob,role:e.target.value})} style={styles.modalInput}/>
               <label style={styles.label}>Company</label>
-              <input
-                placeholder="e.g. Acme Corp"
-                value={newJob.company}
-                onChange={e => setNewJob({ ...newJob, company: e.target.value })}
-                style={styles.modalInput}
-              />
-
+              <input placeholder="e.g. Acme Corp" value={newJob.company}
+                onChange={e => setNewJob({...newJob,company:e.target.value})} style={styles.modalInput}/>
               <label style={styles.label}>Location</label>
-              <input
-                placeholder="e.g. Hyderabad, Telangana"
-                value={newJob.location}
-                onChange={e => setNewJob({ ...newJob, location: e.target.value })}
-                style={styles.modalInput}
-              />
-
+              <input placeholder="e.g. Hyderabad, Telangana" value={newJob.location}
+                onChange={e => setNewJob({...newJob,location:e.target.value})} style={styles.modalInput}/>
               <label style={styles.label}>Job Description</label>
-              <textarea
-                placeholder="Paste the job description here…"
-                value={newJob.description}
-                onChange={e => setNewJob({ ...newJob, description: e.target.value })}
-                style={{ ...styles.modalInput, height: "120px", resize: "vertical" }}
-              />
+              <textarea placeholder="Paste the job description…" value={newJob.description}
+                onChange={e => setNewJob({...newJob,description:e.target.value})}
+                style={{...styles.modalInput,height:"120px",resize:"vertical"}}/>
             </div>
-
             <div style={styles.modalFooter}>
               <button onClick={() => setShowAddModal(false)} style={styles.cancelBtn}>Cancel</button>
-              <button onClick={handleAddJob} style={styles.saveBtn} disabled={!newJob.role.trim()}>
-                Save Job
-              </button>
+              <button onClick={handleAddJob} disabled={!newJob.role.trim()} style={styles.saveBtn}>Save Job</button>
             </div>
           </div>
         </div>
@@ -507,444 +393,105 @@ export default function Jobs() {
   );
 }
 
+/* ─── Spinner ────────────────────────────────────────────────────── */
+
+function Spinner({ large }) {
+  const size = large ? "32px" : "12px";
+  const border = large ? "3px" : "2px";
+  return (
+    <span style={{
+      display:      "inline-block",
+      width:        size,
+      height:       size,
+      border:       border + " solid rgba(120,120,128,0.2)",
+      borderTop:    border + " solid var(--text-primary)",
+      borderRadius: "50%",
+      animation:    "spin 0.6s linear infinite",
+      verticalAlign:"middle"
+    }} />
+  );
+}
+
 /* ─── Styles ─────────────────────────────────────────────────────── */
 
 const styles = {
-  page: {
-    padding: "4px 0 40px 0"
-  },
+  page:         { padding: "4px 0 40px 0" },
 
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "24px",
-    flexWrap: "wrap",
-    gap: "12px"
-  },
-
-  pageTitle: {
-    margin: "0 0 4px 0",
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "var(--text-primary)"
-  },
-
-  pageSubtitle: {
-    margin: 0,
-    fontSize: "13px",
-    color: "var(--text-secondary)"
-  },
-
-  headerActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    flexWrap: "wrap"
-  },
-
-  loadMsg: {
-    fontSize: "12px",
-    color: "var(--text-secondary)",
-    fontStyle: "italic"
-  },
-
-  errorBanner: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "12px",
-    padding: "14px 18px",
-    background: "rgba(255,59,48,0.12)",
-    border: "1px solid rgba(255,59,48,0.35)",
-    borderRadius: "14px",
-    color: "#FF453A",
-    fontSize: "13px",
-    fontWeight: "500",
-    lineHeight: "1.5",
-    marginBottom: "20px"
-  },
-
-  errorDismiss: {
-    background: "transparent",
-    border: "none",
-    color: "#FF453A",
-    cursor: "pointer",
-    fontSize: "14px",
-    padding: "0 4px",
-    flexShrink: 0,
-    boxShadow: "none"
-  },
+  header:       { display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"24px", flexWrap:"wrap", gap:"12px" },
+  pageTitle:    { margin:"0 0 4px 0", fontSize:"28px", fontWeight:"700", color:"var(--text-primary)" },
+  pageSubtitle: { margin:0, fontSize:"13px", color:"var(--text-secondary)" },
+  headerActions:{ display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap" },
+  loadMsg:      { fontSize:"12px", color:"var(--text-secondary)", fontStyle:"italic" },
 
   refreshBtn: {
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(10px)",
-    border: "1px solid var(--glass-border)",
-    color: "var(--text-primary)",
-    borderRadius: "12px",
-    padding: "9px 16px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    boxShadow: "none"
+    background:"var(--glass-bg)", backdropFilter:"blur(10px)",
+    border:"1px solid var(--glass-border)", color:"var(--text-primary)",
+    borderRadius:"12px", padding:"9px 16px", fontWeight:"600", fontSize:"13px",
+    cursor:"pointer", display:"flex", alignItems:"center", gap:"6px", boxShadow:"none"
   },
 
   addBtn: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff",
-    borderRadius: "12px",
-    padding: "9px 18px",
-    fontWeight: "600",
-    fontSize: "13px",
-    border: "none",
-    cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(10,132,255,0.3)"
+    background:"linear-gradient(135deg,#0A84FF,#0066CC)", color:"#fff",
+    borderRadius:"12px", padding:"9px 18px", fontWeight:"600", fontSize:"13px",
+    border:"none", cursor:"pointer", boxShadow:"0 4px 12px rgba(10,132,255,0.3)"
   },
 
-  tabs: {
-    display: "flex",
-    gap: "8px",
-    marginBottom: "20px"
-  },
-
-  tab: {
-    padding: "10px 20px",
-    borderRadius: "12px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    border: "none",
-    transition: "all 0.2s ease",
-    boxShadow: "none"
-  },
-
-  tabActive: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff",
-    boxShadow: "0 4px 12px rgba(10,132,255,0.3)"
-  },
-
-  tabInactive: {
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(10px)",
-    color: "var(--text-secondary)",
-    border: "1px solid var(--glass-border)"
-  },
+  tabs:       { display:"flex", gap:"8px", marginBottom:"20px" },
+  tab:        { padding:"10px 20px", borderRadius:"12px", fontWeight:"600", fontSize:"13px", cursor:"pointer", border:"none", transition:"all 0.2s ease", boxShadow:"none" },
+  tabActive:  { background:"linear-gradient(135deg,#0A84FF,#0066CC)", color:"#fff", boxShadow:"0 4px 12px rgba(10,132,255,0.3)" },
+  tabInactive:{ background:"var(--glass-bg)", backdropFilter:"blur(10px)", color:"var(--text-secondary)", border:"1px solid var(--glass-border)" },
 
   filterBar: {
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-    flexWrap: "wrap",
-    padding: "16px",
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    borderRadius: "16px",
-    border: "1px solid var(--glass-border)",
-    marginBottom: "20px"
+    display:"flex", gap:"10px", alignItems:"center", flexWrap:"wrap",
+    padding:"16px", background:"var(--glass-bg)", backdropFilter:"blur(16px)",
+    WebkitBackdropFilter:"blur(16px)", borderRadius:"16px",
+    border:"1px solid var(--glass-border)", marginBottom:"20px"
   },
 
-  searchWrapper: {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    flex: "1",
-    minWidth: "220px"
-  },
+  searchWrapper: { position:"relative", display:"flex", alignItems:"center", flex:"1", minWidth:"220px" },
+  searchIcon:    { position:"absolute", left:"12px", fontSize:"14px", pointerEvents:"none" },
+  searchInput:   { width:"100%", paddingLeft:"36px", paddingRight:"32px", borderRadius:"12px", fontSize:"14px", border:"1px solid var(--glass-border)", background:"var(--glass-bg)" },
+  clearBtn:      { position:"absolute", right:"8px", background:"transparent", border:"none", color:"var(--text-secondary)", cursor:"pointer", padding:"4px", fontSize:"12px", boxShadow:"none", borderRadius:"50%" },
 
-  searchIcon: {
-    position: "absolute",
-    left: "12px",
-    fontSize: "14px",
-    pointerEvents: "none"
-  },
+  filterGroup: { display:"flex", gap:"6px", flexWrap:"wrap" },
+  pill:        { padding:"7px 14px", borderRadius:"20px", fontSize:"12px", fontWeight:"600", cursor:"pointer", border:"none", transition:"all 0.15s ease", boxShadow:"none" },
+  pillActive:  { background:"linear-gradient(135deg,#0A84FF,#0066CC)", color:"#fff" },
+  pillInactive:{ background:"rgba(120,120,128,0.12)", color:"var(--text-secondary)" },
 
-  searchInput: {
-    width: "100%",
-    paddingLeft: "36px",
-    paddingRight: "32px",
-    borderRadius: "12px",
-    fontSize: "14px",
-    border: "1px solid var(--glass-border)",
-    background: "var(--glass-bg)"
-  },
+  select: { padding:"8px 12px", borderRadius:"12px", fontSize:"13px", fontWeight:"500", border:"1px solid var(--glass-border)", background:"var(--glass-bg)", color:"var(--text-primary)", cursor:"pointer" },
 
-  clearBtn: {
-    position: "absolute",
-    right: "8px",
-    background: "transparent",
-    border: "none",
-    color: "var(--text-secondary)",
-    cursor: "pointer",
-    padding: "4px",
-    fontSize: "12px",
-    boxShadow: "none",
-    borderRadius: "50%"
-  },
+  toggleBtn:     { padding:"7px 14px", borderRadius:"20px", fontSize:"12px", fontWeight:"600", cursor:"pointer", border:"none", transition:"all 0.15s ease", boxShadow:"none" },
+  toggleActive:  { background:"rgba(48,209,88,0.15)", color:"#30D158", border:"1px solid rgba(48,209,88,0.3)" },
+  toggleInactive:{ background:"rgba(120,120,128,0.12)", color:"var(--text-secondary)" },
+  clearAllBtn:   { padding:"7px 12px", borderRadius:"20px", fontSize:"12px", fontWeight:"600", cursor:"pointer", background:"rgba(255,59,48,0.1)", color:"#FF3B30", border:"1px solid rgba(255,59,48,0.2)", boxShadow:"none" },
 
-  filterGroup: {
-    display: "flex",
-    gap: "6px",
-    flexWrap: "wrap"
-  },
+  resultsHeader: { display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px" },
+  resultsCount:  { fontSize:"13px", color:"var(--text-secondary)", fontWeight:"500" },
 
-  pill: {
-    padding: "7px 14px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    border: "none",
-    transition: "all 0.15s ease",
-    boxShadow: "none"
-  },
+  loadingState: { display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", padding:"60px 20px" },
+  loadingText:  { fontSize:"14px", color:"var(--text-secondary)" },
 
-  pillActive: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff"
-  },
+  grid: { display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:"16px" },
 
-  pillInactive: {
-    background: "rgba(120,120,128,0.12)",
-    color: "var(--text-secondary)"
-  },
+  emptyState: { textAlign:"center", padding:"60px 20px", background:"var(--glass-bg)", backdropFilter:"blur(16px)", borderRadius:"20px", border:"1px solid var(--glass-border)" },
+  emptyIcon:  { fontSize:"48px", marginBottom:"12px" },
+  emptyTitle: { margin:"0 0 8px 0", fontSize:"20px", fontWeight:"600", color:"var(--text-primary)" },
+  emptyText:  { margin:"0 0 20px 0", color:"var(--text-secondary)", fontSize:"14px" },
 
-  select: {
-    padding: "8px 12px",
-    borderRadius: "12px",
-    fontSize: "13px",
-    fontWeight: "500",
-    border: "1px solid var(--glass-border)",
-    background: "var(--glass-bg)",
-    color: "var(--text-primary)",
-    cursor: "pointer"
-  },
+  pagination:   { display:"flex", justifyContent:"center", alignItems:"center", gap:"8px", marginTop:"32px" },
+  pageNumbers:  { display:"flex", gap:"6px" },
+  pageBtn:      { padding:"8px 14px", borderRadius:"10px", fontWeight:"600", fontSize:"13px", cursor:"pointer", background:"var(--glass-bg)", backdropFilter:"blur(10px)", border:"1px solid var(--glass-border)", color:"var(--text-primary)", boxShadow:"none", transition:"all 0.2s ease" },
+  pageBtnActive:{ background:"linear-gradient(135deg,#0A84FF,#0066CC)", color:"#fff", border:"none", boxShadow:"0 4px 12px rgba(10,132,255,0.3)" },
 
-  toggleBtn: {
-    padding: "7px 14px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    border: "none",
-    transition: "all 0.15s ease",
-    boxShadow: "none"
-  },
-
-  toggleActive: {
-    background: "rgba(48,209,88,0.15)",
-    color: "#30D158",
-    border: "1px solid rgba(48,209,88,0.3)"
-  },
-
-  toggleInactive: {
-    background: "rgba(120,120,128,0.12)",
-    color: "var(--text-secondary)"
-  },
-
-  clearAllBtn: {
-    padding: "7px 12px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    background: "rgba(255,59,48,0.1)",
-    color: "#FF3B30",
-    border: "1px solid rgba(255,59,48,0.2)",
-    boxShadow: "none"
-  },
-
-  resultsHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "16px"
-  },
-
-  resultsCount: {
-    fontSize: "13px",
-    color: "var(--text-secondary)",
-    fontWeight: "500"
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: "16px"
-  },
-
-  emptyState: {
-    textAlign: "center",
-    padding: "60px 20px",
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(16px)",
-    borderRadius: "20px",
-    border: "1px solid var(--glass-border)"
-  },
-
-  emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "12px"
-  },
-
-  emptyTitle: {
-    margin: "0 0 8px 0",
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "var(--text-primary)"
-  },
-
-  emptyText: {
-    margin: "0 0 20px 0",
-    color: "var(--text-secondary)",
-    fontSize: "14px"
-  },
-
-  pagination: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "8px",
-    marginTop: "32px"
-  },
-
-  pageNumbers: {
-    display: "flex",
-    gap: "6px"
-  },
-
-  pageBtn: {
-    padding: "8px 14px",
-    borderRadius: "10px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(10px)",
-    border: "1px solid var(--glass-border)",
-    color: "var(--text-primary)",
-    boxShadow: "none",
-    transition: "all 0.2s ease"
-  },
-
-  pageBtnActive: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff",
-    border: "none",
-    boxShadow: "0 4px 12px rgba(10,132,255,0.3)"
-  },
-
-  spinner: {
-    display: "inline-block",
-    width: "12px",
-    height: "12px",
-    border: "2px solid rgba(255,255,255,0.3)",
-    borderTop: "2px solid var(--text-primary)",
-    borderRadius: "50%",
-    animation: "spin 0.6s linear infinite"
-  },
-
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.5)",
-    backdropFilter: "blur(8px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000
-  },
-
-  modal: {
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(30px)",
-    WebkitBackdropFilter: "blur(30px)",
-    border: "1px solid var(--glass-border)",
-    borderRadius: "20px",
-    width: "min(500px, 90vw)",
-    boxShadow: "0 30px 60px rgba(0,0,0,0.3)"
-  },
-
-  modalHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "20px 24px 16px",
-    borderBottom: "1px solid var(--glass-border)",
-    color: "var(--text-primary)"
-  },
-
-  modalClose: {
-    background: "rgba(120,120,128,0.15)",
-    border: "none",
-    borderRadius: "50%",
-    width: "28px",
-    height: "28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    color: "var(--text-secondary)",
-    fontSize: "13px",
-    padding: 0,
-    boxShadow: "none"
-  },
-
-  modalBody: {
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px"
-  },
-
-  label: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "var(--text-secondary)",
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-    marginBottom: "2px"
-  },
-
-  modalInput: {
-    width: "100%",
-    borderRadius: "12px",
-    fontSize: "14px",
-    marginBottom: "8px"
-  },
-
-  modalFooter: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-    padding: "16px 24px 20px",
-    borderTop: "1px solid var(--glass-border)"
-  },
-
-  cancelBtn: {
-    background: "rgba(120,120,128,0.15)",
-    color: "var(--text-secondary)",
-    border: "none",
-    borderRadius: "12px",
-    padding: "10px 18px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    boxShadow: "none"
-  },
-
-  saveBtn: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "12px",
-    padding: "10px 20px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(10,132,255,0.3)"
-  }
+  // Modal
+  modalOverlay: { position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 },
+  modal:        { background:"var(--glass-bg)", backdropFilter:"blur(30px)", WebkitBackdropFilter:"blur(30px)", border:"1px solid var(--glass-border)", borderRadius:"20px", width:"min(500px,90vw)", boxShadow:"0 30px 60px rgba(0,0,0,0.3)" },
+  modalHeader:  { display:"flex", justifyContent:"space-between", alignItems:"center", padding:"20px 24px 16px", borderBottom:"1px solid var(--glass-border)" },
+  modalClose:   { background:"rgba(120,120,128,0.15)", border:"none", borderRadius:"50%", width:"28px", height:"28px", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--text-secondary)", fontSize:"13px", padding:0, boxShadow:"none" },
+  modalBody:    { padding:"20px 24px", display:"flex", flexDirection:"column", gap:"8px" },
+  label:        { fontSize:"12px", fontWeight:"600", color:"var(--text-secondary)", textTransform:"uppercase", letterSpacing:"0.04em", marginBottom:"2px" },
+  modalInput:   { width:"100%", borderRadius:"12px", fontSize:"14px", marginBottom:"8px" },
+  modalFooter:  { display:"flex", justifyContent:"flex-end", gap:"10px", padding:"16px 24px 20px", borderTop:"1px solid var(--glass-border)" },
+  cancelBtn:    { background:"rgba(120,120,128,0.15)", color:"var(--text-secondary)", border:"none", borderRadius:"12px", padding:"10px 18px", fontWeight:"600", fontSize:"13px", cursor:"pointer", boxShadow:"none" },
+  saveBtn:      { background:"linear-gradient(135deg,#0A84FF,#0066CC)", color:"#fff", border:"none", borderRadius:"12px", padding:"10px 20px", fontWeight:"600", fontSize:"13px", cursor:"pointer", boxShadow:"0 4px 12px rgba(10,132,255,0.3)" }
 };
