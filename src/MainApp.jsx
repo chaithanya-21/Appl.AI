@@ -2,71 +2,31 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
 import { useState, useEffect } from "react";
 
-import Jobs from "./pages/Jobs";
+import Jobs         from "./pages/Jobs";
 import Applications from "./pages/Applications";
-import Dashboard from "./pages/Dashboard";
-import Outreach from "./pages/Outreach";
+import Dashboard    from "./pages/Dashboard";
+import Outreach     from "./pages/Outreach";
+import OnboardingModal from "./components/OnboardingModal";
 
-/* ─── Full User Journey Guide ─────────────────────────────────── */
+/* ─── Guide content ─────────────────────────────────────────────── */
 
 const GUIDE_STEPS = [
-  {
-    icon: "🚀",
-    step: "Step 1",
-    title: "Set Up Your Profile",
-    text: "Go to Career Center (✨) and upload your resume (.docx or paste plain text). This powers AI match scores on every job card and lets the AI tailor your resume for specific roles."
-  },
-  {
-    icon: "🌐",
-    step: "Step 2",
-    title: "Browse Live Jobs from India",
-    text: "Head to Job Board. Jobs from LinkedIn, Naukri, Indeed and more are auto-fetched for India (last 30 days). Use filters to narrow by role, state, work type (Remote / Hybrid / Onsite), experience level, and salary disclosure."
-  },
-  {
-    icon: "⭐",
-    step: "Step 3",
-    title: "Star Jobs You Like",
-    text: "Hit the ⭐ icon on any job card to mark it as a priority. Use the 'Starred only' filter to focus your day. Each card shows a match score based on your uploaded resume."
-  },
-  {
-    icon: "📋",
-    step: "Step 4",
-    title: "Apply & Track",
-    text: "Click 'Mark Applied' on a job card to instantly move it to your Applications board. The Kanban board has four lanes: Applied → Interview → Offer → Rejected. Drag or use the dropdown to move cards between stages."
-  },
-  {
-    icon: "📅",
-    step: "Step 5",
-    title: "Log Interviews & Follow-ups",
-    text: "Inside each application card, set an Interview Date and a Follow-up Date. Your Dashboard will surface today's interviews and follow-ups automatically every morning so nothing slips through."
-  },
-  {
-    icon: "✨",
-    step: "Step 6",
-    title: "AI Resume Optimisation",
-    text: "Click the ✨ sparkle icon on any job card to send its job description to Career Center. The AI will rewrite bullet points in your resume to match the JD, boosting your ATS score. You can also generate a personalised cold email for that role."
-  },
-  {
-    icon: "📊",
-    step: "Step 7",
-    title: "Monitor Your Dashboard",
-    text: "The Dashboard gives you a daily command centre: total live jobs, applications sent, interviews lined up, offers received, your pipeline breakdown, today's follow-ups, and your top-ranked unapplied jobs — all at a glance."
-  },
-  {
-    icon: "🔄",
-    step: "Pro Tip",
-    title: "Refresh Jobs Daily",
-    text: "Click the ↻ Refresh button on the Job Board each morning to pull the latest 30-day postings. Jobs are de-duplicated automatically, so you only ever see new listings."
-  }
+  { icon: "📄", title: "Upload Your Resume",   text: "Go to Career Center, upload your .docx resume. This powers AI optimisation and accurate job match scores." },
+  { icon: "🌐", title: "Browse Live Jobs",      text: "The Job Board fetches current Indian openings every session. Use filters for role, work type, state and experience level." },
+  { icon: "⭐", title: "Star & Track",          text: "Star jobs you like. Hit 'Mark Applied' to move them into your Applications tracker automatically." },
+  { icon: "✨", title: "Optimise for Each Role", text: "Click ✨ on any job card to send its JD to Career Center, where AI tailors your resume and writes outreach for you." },
+  { icon: "📊", title: "Dashboard",             text: "Your Dashboard shows today's follow-ups, interviews, your best matching jobs, and your full application pipeline." }
 ];
 
-/* ─── Component ──────────────────────────────────────────────── */
+/* ─── Component ─────────────────────────────────────────────────── */
 
 export default function MainApp() {
-  const { meta } = useStore();
-  const [guide, setGuide] = useState(false);
-  const [guideStep, setGuideStep] = useState(0);
-  const [theme, setTheme] = useState(() => localStorage.getItem("appl-theme") || "dark");
+  const { meta, profile } = useStore();
+
+  const [guide,  setGuide]  = useState(false);
+  const [theme,  setTheme]  = useState(() => localStorage.getItem("appl-theme") || "dark");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   const location = useLocation();
 
   useEffect(() => {
@@ -74,11 +34,12 @@ export default function MainApp() {
     localStorage.setItem("appl-theme", theme);
   }, [theme]);
 
-  // Reset guide to first step when opened
-  function openGuide() {
-    setGuideStep(0);
-    setGuide(true);
-  }
+  // Show onboarding once after login if not yet completed
+  useEffect(() => {
+    if (!profile.setupComplete) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -86,53 +47,58 @@ export default function MainApp() {
   };
 
   const NAV_ITEMS = [
-    { to: "/dashboard",    label: "📊 Dashboard" },
-    { to: "/jobs",         label: "🌐 Job Board" },
+    { to: "/dashboard",    label: "📊 Dashboard"    },
+    { to: "/jobs",         label: "🌐 Job Board"    },
     { to: "/applications", label: "📋 Applications" },
     { to: "/outreach",     label: "✨ Career Center" }
   ];
-
-  const currentStep = GUIDE_STEPS[guideStep];
-  const isFirst = guideStep === 0;
-  const isLast  = guideStep === GUIDE_STEPS.length - 1;
 
   return (
     <div style={styles.wrapper}>
 
       {/* Animated background */}
-      <div
-        style={{
-          ...styles.background,
-          backgroundImage: 'url("/ai-login-bg.png")'
-        }}
-      />
+      <div style={{ ...styles.background, backgroundImage: 'url("/ai-login-bg.png")' }} />
       <div style={styles.overlay} />
 
       <div style={styles.appContainer}>
 
         {/* ── Sidebar ── */}
         <div style={styles.sidebar}>
+
+          {/* Brand + avatar */}
           <div style={styles.brandArea}>
-            <span style={styles.brandIcon}>✦</span>
-            <span style={styles.brandName}>Appl.AI</span>
+            <div style={styles.avatarWrap}>
+              {profile.name ? (
+                <div style={styles.avatar}>
+                  {profile.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
+                </div>
+              ) : (
+                <div style={styles.avatar}>AI</div>
+              )}
+            </div>
+            <div>
+              <div style={styles.brandName}>Appl.AI</div>
+              {profile.name && (
+                <div style={styles.profileName}>{profile.name.split(" ")[0]}</div>
+              )}
+            </div>
           </div>
 
           <nav style={styles.nav}>
             {NAV_ITEMS.map(({ to, label }) => {
               const isActive =
                 location.pathname === to ||
-                (to === "/dashboard" && location.pathname === "/");
+                (to === "/dashboard" && (location.pathname === "/" || location.pathname === ""));
               return (
                 <Link
                   key={to}
                   to={to}
                   style={{
                     ...styles.navItem,
-                    background: isActive
-                      ? "rgba(10,132,255,0.2)"
-                      : "transparent",
-                    color: isActive ? "#0A84FF" : "var(--text-primary)",
-                    fontWeight: isActive ? "700" : "500"
+                    background: isActive ? "rgba(10,132,255,0.18)" : "transparent",
+                    color:      isActive ? "#0A84FF" : "var(--text-primary)",
+                    fontWeight: isActive ? "700" : "500",
+                    borderLeft: isActive ? "3px solid #0A84FF" : "3px solid transparent"
                   }}
                 >
                   {label}
@@ -141,10 +107,8 @@ export default function MainApp() {
             })}
           </nav>
 
-          {/* Spacer */}
           <div style={{ flex: 1 }} />
 
-          {/* Bottom actions */}
           <div style={styles.sidebarFooter}>
             <button
               onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
@@ -153,8 +117,15 @@ export default function MainApp() {
               {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
             </button>
 
-            <button onClick={openGuide} style={styles.ghostBtn}>
+            <button onClick={() => setGuide(true)} style={styles.ghostBtn}>
               📖 User Guide
+            </button>
+
+            <button
+              onClick={() => setShowOnboarding(true)}
+              style={styles.ghostBtn}
+            >
+              👤 Edit Profile
             </button>
 
             <button onClick={handleLogout} style={styles.logoutBtn}>
@@ -166,7 +137,6 @@ export default function MainApp() {
         {/* ── Main Content ── */}
         <div style={styles.mainContent}>
 
-          {/* Save indicator */}
           <div style={styles.saveIndicator}>
             Saved ✓ {new Date(meta.lastSaved).toLocaleTimeString()}
           </div>
@@ -178,106 +148,38 @@ export default function MainApp() {
             <Route path="/applications" element={<Applications />} />
             <Route path="/outreach"     element={<Outreach />} />
           </Routes>
+
         </div>
       </div>
 
+      {/* ── Onboarding Modal ── */}
+      {showOnboarding && (
+        <OnboardingModal onComplete={() => setShowOnboarding(false)} />
+      )}
+
       {/* ── User Guide Modal ── */}
       {guide && (
-        <div
-          style={styles.modalOverlay}
-          onClick={() => setGuide(false)}
-        >
-          <div
-            style={styles.modal}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
+        <div style={styles.modalOverlay} onClick={() => setGuide(false)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <div>
-                <div style={styles.guideStepLabel}>
-                  {currentStep.step} of {GUIDE_STEPS.length}
-                </div>
-                <h2 style={styles.modalTitle}>📖 User Guide</h2>
-              </div>
-              <button
-                onClick={() => setGuide(false)}
-                style={styles.modalCloseBtn}
-              >
-                ✕
-              </button>
+              <h2 style={{ margin: 0, fontSize: "20px", color: "var(--text-primary)" }}>
+                Getting Started
+              </h2>
+              <button onClick={() => setGuide(false)} style={styles.modalCloseBtn}>✕</button>
             </div>
-
-            {/* Progress bar */}
-            <div style={styles.progressTrack}>
-              <div
-                style={{
-                  ...styles.progressFill,
-                  width: (((guideStep + 1) / GUIDE_STEPS.length) * 100) + "%"
-                }}
-              />
-            </div>
-
-            {/* Step content */}
             <div style={styles.modalBody}>
-              <div style={styles.guideStepCard}>
-                <div style={styles.guideIconLarge}>{currentStep.icon}</div>
-                <div style={styles.guideStepTitle}>{currentStep.title}</div>
-                <div style={styles.guideStepText}>{currentStep.text}</div>
-              </div>
-
-              {/* Step dots */}
-              <div style={styles.stepDots}>
-                {GUIDE_STEPS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setGuideStep(i)}
-                    style={{
-                      ...styles.stepDot,
-                      background: i === guideStep
-                        ? "#0A84FF"
-                        : i < guideStep
-                        ? "rgba(10,132,255,0.4)"
-                        : "rgba(120,120,128,0.25)",
-                      width: i === guideStep ? "20px" : "8px"
-                    }}
-                  />
-                ))}
-              </div>
+              {GUIDE_STEPS.map((step, i) => (
+                <div key={i} style={styles.guideStep}>
+                  <div style={styles.guideIcon}>{step.icon}</div>
+                  <div>
+                    <div style={styles.guideTitle}>{step.title}</div>
+                    <div style={styles.guideText}>{step.text}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {/* Footer navigation */}
             <div style={styles.modalFooter}>
-              <button
-                onClick={() => setGuide(false)}
-                style={styles.skipBtn}
-              >
-                Skip
-              </button>
-              <div style={styles.navBtns}>
-                {!isFirst && (
-                  <button
-                    onClick={() => setGuideStep(s => s - 1)}
-                    style={styles.prevBtn}
-                  >
-                    ← Back
-                  </button>
-                )}
-                {!isLast ? (
-                  <button
-                    onClick={() => setGuideStep(s => s + 1)}
-                    style={styles.nextBtn}
-                  >
-                    Next →
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setGuide(false)}
-                    style={styles.nextBtn}
-                  >
-                    🎉 Let's go!
-                  </button>
-                )}
-              </div>
+              <button onClick={() => setGuide(false)} style={styles.doneBtn}>Got it!</button>
             </div>
           </div>
         </div>
@@ -286,320 +188,252 @@ export default function MainApp() {
   );
 }
 
-/* ─── Styles ─────────────────────────────────────────────────── */
+/* ─── Styles ─────────────────────────────────────────────────────── */
 
 const styles = {
-  wrapper: {
-    position: "relative",
-    height: "100vh",
-    overflow: "hidden"
-  },
+  wrapper:      { position: "relative", height: "100vh", overflow: "hidden" },
 
   background: {
-    position: "absolute",
-    inset: 0,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    animation: "float 30s infinite alternate ease-in-out",
-    zIndex: 1
+    position:          "absolute", inset: 0,
+    backgroundSize:    "cover",
+    backgroundPosition:"center",
+    animation:         "float 30s infinite alternate ease-in-out",
+    zIndex:            1
   },
 
   overlay: {
-    position: "absolute",
-    inset: 0,
+    position: "absolute", inset: 0,
     background: "rgba(0,0,0,0.4)",
     zIndex: 2
   },
 
   appContainer: {
-    position: "relative",
-    zIndex: 3,
-    display: "flex",
-    height: "100vh"
+    position: "relative", zIndex: 3,
+    display: "flex", height: "100vh"
   },
 
   sidebar: {
-    width: "240px",
-    padding: "24px 16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(24px)",
+    width:              "240px",
+    padding:            "20px 14px",
+    display:            "flex",
+    flexDirection:      "column",
+    gap:                "4px",
+    background:         "var(--glass-bg)",
+    backdropFilter:     "blur(24px)",
     WebkitBackdropFilter: "blur(24px)",
-    borderRight: "1px solid var(--glass-border)",
-    flexShrink: 0
+    borderRight:        "1px solid var(--glass-border)",
+    flexShrink:         0
   },
 
   brandArea: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "24px",
-    paddingLeft: "8px"
+    display:     "flex",
+    alignItems:  "center",
+    gap:         "10px",
+    marginBottom:"20px",
+    paddingLeft: "4px"
   },
 
-  brandIcon: {
-    fontSize: "20px",
-    color: "#0A84FF"
+  avatarWrap: { flexShrink: 0 },
+
+  avatar: {
+    width:          "36px",
+    height:         "36px",
+    borderRadius:   "10px",
+    background:     "linear-gradient(135deg,#0A84FF,#BF5AF2)",
+    display:        "flex",
+    alignItems:     "center",
+    justifyContent: "center",
+    color:          "#fff",
+    fontWeight:     "800",
+    fontSize:       "13px",
+    letterSpacing:  "0.02em"
   },
 
   brandName: {
-    fontSize: "20px",
+    fontSize:   "17px",
     fontWeight: "800",
-    color: "var(--text-primary)",
-    letterSpacing: "-0.02em"
+    color:      "var(--text-primary)",
+    letterSpacing: "-0.02em",
+    lineHeight: 1.2
+  },
+
+  profileName: {
+    fontSize: "11px",
+    color:    "var(--text-secondary)",
+    fontWeight: "500"
   },
 
   nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px"
+    display: "flex", flexDirection: "column", gap: "2px"
   },
 
   navItem: {
     textDecoration: "none",
-    padding: "11px 14px",
-    borderRadius: "12px",
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-    display: "block"
+    padding:        "10px 12px",
+    borderRadius:   "10px",
+    fontSize:       "13px",
+    transition:     "all 0.2s ease",
+    display:        "block",
+    marginLeft:     "-3px"
   },
 
   sidebarFooter: {
-    display: "flex",
+    display:       "flex",
     flexDirection: "column",
-    gap: "6px",
-    marginTop: "12px"
+    gap:           "5px",
+    marginTop:     "10px"
   },
 
   ghostBtn: {
-    padding: "10px 14px",
-    borderRadius: "12px",
-    border: "1px solid var(--glass-border)",
-    background: "transparent",
-    color: "var(--text-secondary)",
-    fontWeight: "500",
-    fontSize: "13px",
-    cursor: "pointer",
-    textAlign: "left",
-    boxShadow: "none"
+    padding:      "9px 12px",
+    borderRadius: "10px",
+    border:       "1px solid var(--glass-border)",
+    background:   "transparent",
+    color:        "var(--text-secondary)",
+    fontWeight:   "500",
+    fontSize:     "12px",
+    cursor:       "pointer",
+    textAlign:    "left",
+    boxShadow:    "none"
   },
 
   logoutBtn: {
-    padding: "10px 14px",
-    borderRadius: "12px",
-    background: "rgba(255,59,48,0.1)",
-    color: "#FF453A",
-    border: "1px solid rgba(255,59,48,0.2)",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    boxShadow: "none"
+    padding:      "9px 12px",
+    borderRadius: "10px",
+    background:   "rgba(255,59,48,0.1)",
+    color:        "#FF453A",
+    border:       "1px solid rgba(255,59,48,0.2)",
+    fontWeight:   "600",
+    fontSize:     "12px",
+    cursor:       "pointer",
+    boxShadow:    "none"
   },
 
   mainContent: {
-    flex: 1,
-    padding: "32px",
-    overflowY: "auto",
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(18px)",
+    flex:                 1,
+    padding:              "32px",
+    overflowY:            "auto",
+    background:           "var(--glass-bg)",
+    backdropFilter:       "blur(18px)",
     WebkitBackdropFilter: "blur(18px)"
   },
 
   saveIndicator: {
-    position: "fixed",
-    top: 16,
-    right: 24,
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(10px)",
+    position:             "fixed",
+    top:                  14,
+    right:                22,
+    background:           "var(--glass-bg)",
+    backdropFilter:       "blur(10px)",
     WebkitBackdropFilter: "blur(10px)",
-    border: "1px solid var(--glass-border)",
-    padding: "5px 12px",
-    borderRadius: "20px",
-    fontSize: "11px",
-    fontWeight: "500",
-    color: "var(--text-secondary)",
-    zIndex: 100
+    border:               "1px solid var(--glass-border)",
+    padding:              "4px 12px",
+    borderRadius:         "20px",
+    fontSize:             "11px",
+    fontWeight:           "500",
+    color:                "var(--text-secondary)",
+    zIndex:               100
   },
 
-  // Modal
+  // Guide modal
   modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.65)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000
+    position:             "fixed",
+    inset:                0,
+    background:           "rgba(0,0,0,0.6)",
+    backdropFilter:       "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+    display:              "flex",
+    alignItems:           "center",
+    justifyContent:       "center",
+    zIndex:               1000
   },
 
   modal: {
-    background: "var(--glass-bg)",
-    backdropFilter: "blur(40px)",
-    WebkitBackdropFilter: "blur(40px)",
-    border: "1px solid var(--glass-border)",
-    borderRadius: "24px",
-    width: "min(540px, 92vw)",
-    maxHeight: "88vh",
-    overflow: "auto",
-    boxShadow: "0 40px 80px rgba(0,0,0,0.5)"
+    background:           "var(--glass-bg)",
+    backdropFilter:       "blur(30px)",
+    WebkitBackdropFilter: "blur(30px)",
+    border:               "1px solid var(--glass-border)",
+    borderRadius:         "24px",
+    width:                "min(520px,92vw)",
+    maxHeight:            "85vh",
+    overflow:             "auto",
+    boxShadow:            "0 40px 80px rgba(0,0,0,0.4)"
   },
 
   modalHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    padding: "24px 28px 12px"
-  },
-
-  guideStepLabel: {
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "#0A84FF",
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-    marginBottom: "4px"
-  },
-
-  modalTitle: {
-    margin: 0,
-    fontSize: "20px",
-    fontWeight: "800",
-    color: "var(--text-primary)"
+    display:         "flex",
+    justifyContent:  "space-between",
+    alignItems:      "center",
+    padding:         "24px 28px 16px",
+    borderBottom:    "1px solid var(--glass-border)"
   },
 
   modalCloseBtn: {
-    background: "rgba(120,120,128,0.15)",
-    border: "none",
+    background:   "rgba(120,120,128,0.15)",
+    border:       "none",
     borderRadius: "50%",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    color: "var(--text-secondary)",
-    fontSize: "13px",
-    padding: 0,
-    boxShadow: "none",
-    fontWeight: "600",
-    flexShrink: 0
-  },
-
-  progressTrack: {
-    height: "3px",
-    background: "rgba(120,120,128,0.2)",
-    margin: "0 28px 0",
-    borderRadius: "4px",
-    overflow: "hidden"
-  },
-
-  progressFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #0A84FF, #BF5AF2)",
-    borderRadius: "4px",
-    transition: "width 0.35s ease"
+    width:        "30px",
+    height:       "30px",
+    display:      "flex",
+    alignItems:   "center",
+    justifyContent:"center",
+    cursor:       "pointer",
+    color:        "var(--text-secondary)",
+    fontSize:     "13px",
+    padding:      0,
+    boxShadow:    "none",
+    fontWeight:   "600"
   },
 
   modalBody: {
-    padding: "24px 28px 12px"
-  },
-
-  guideStepCard: {
-    background: "rgba(10,132,255,0.06)",
-    border: "1px solid rgba(10,132,255,0.15)",
-    borderRadius: "20px",
-    padding: "28px 24px",
-    textAlign: "center",
-    marginBottom: "20px"
-  },
-
-  guideIconLarge: {
-    fontSize: "48px",
-    marginBottom: "16px",
-    lineHeight: 1
-  },
-
-  guideStepTitle: {
-    fontSize: "20px",
-    fontWeight: "800",
-    color: "var(--text-primary)",
-    marginBottom: "12px"
-  },
-
-  guideStepText: {
-    fontSize: "14px",
-    color: "var(--text-secondary)",
-    lineHeight: "1.7",
-    maxWidth: "380px",
-    margin: "0 auto"
-  },
-
-  stepDots: {
+    padding: "20px 28px",
     display: "flex",
-    justifyContent: "center",
-    gap: "6px",
-    alignItems: "center"
+    flexDirection: "column",
+    gap: "16px"
   },
 
-  stepDot: {
-    height: "8px",
-    borderRadius: "4px",
-    border: "none",
-    padding: 0,
-    cursor: "pointer",
-    boxShadow: "none",
-    transition: "all 0.25s ease"
+  guideStep: {
+    display:    "flex",
+    gap:        "16px",
+    alignItems: "flex-start"
+  },
+
+  guideIcon: {
+    fontSize:       "22px",
+    flexShrink:     0,
+    width:          "40px",
+    height:         "40px",
+    borderRadius:   "10px",
+    background:     "rgba(10,132,255,0.1)",
+    display:        "flex",
+    alignItems:     "center",
+    justifyContent: "center"
+  },
+
+  guideTitle: {
+    fontSize: "14px", fontWeight: "700",
+    color: "var(--text-primary)", marginBottom: "3px"
+  },
+
+  guideText: {
+    fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.5"
   },
 
   modalFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "16px 28px 24px",
-    borderTop: "1px solid var(--glass-border)"
+    padding:         "16px 28px 24px",
+    display:         "flex",
+    justifyContent:  "flex-end",
+    borderTop:       "1px solid var(--glass-border)"
   },
 
-  skipBtn: {
-    background: "transparent",
-    border: "none",
-    color: "var(--text-secondary)",
-    fontSize: "13px",
-    fontWeight: "500",
-    cursor: "pointer",
-    padding: "8px 12px",
-    boxShadow: "none"
-  },
-
-  navBtns: {
-    display: "flex",
-    gap: "8px"
-  },
-
-  prevBtn: {
-    background: "rgba(120,120,128,0.15)",
-    color: "var(--text-primary)",
-    border: "none",
+  doneBtn: {
+    background:   "linear-gradient(135deg,#0A84FF,#0066CC)",
+    color:        "#fff",
+    border:       "none",
     borderRadius: "14px",
-    padding: "11px 20px",
-    fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer",
-    boxShadow: "none"
-  },
-
-  nextBtn: {
-    background: "linear-gradient(135deg, #0A84FF, #0066CC)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "14px",
-    padding: "11px 24px",
-    fontWeight: "700",
-    fontSize: "14px",
-    cursor: "pointer",
-    boxShadow: "0 4px 16px rgba(10,132,255,0.4)"
+    padding:      "12px 28px",
+    fontWeight:   "700",
+    fontSize:     "14px",
+    cursor:       "pointer",
+    boxShadow:    "0 4px 16px rgba(10,132,255,0.4)"
   }
 };
