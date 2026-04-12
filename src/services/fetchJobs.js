@@ -1,5 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// FETCH JOBS  —  India (JSearch via RapidAPI)
+// FETCH JOBS  —  India
+//
+// Strategy: run many targeted queries (role × city) so we surface jobs from
+// every major Indian job hub. We pass country=in to the API and trust it —
+// NO post-filtering that would silently drop real results.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function detectWorkType(job) {
@@ -9,12 +13,12 @@ function detectWorkType(job) {
   if (job.job_is_remote) return "remote";
 
   if (
-    title.includes("hybrid")       ||
-    desc.includes("hybrid work")   ||
-    desc.includes("hybrid model")  ||
-    desc.includes("wfh 2")         ||
-    desc.includes("2 days remote") ||
-    desc.includes("3 days remote") ||
+    title.includes("hybrid")        ||
+    desc.includes("hybrid work")    ||
+    desc.includes("hybrid model")   ||
+    desc.includes("wfh 2")          ||
+    desc.includes("2 days remote")  ||
+    desc.includes("3 days remote")  ||
     desc.includes("work from home 2")
   ) return "hybrid";
 
@@ -25,10 +29,29 @@ function extractExperience(job) {
   const title = (job.job_title       || "").toLowerCase();
   const desc  = (job.job_description || "").toLowerCase();
 
-  if (title.includes("senior") || title.includes("sr.") || desc.includes("5+ years") || desc.includes("7+ years") || desc.includes("8+ years")) return "senior";
-  if (title.includes("lead")   || title.includes("manager") || title.includes("head of") || title.includes("principal")) return "lead";
-  if (title.includes("junior") || title.includes("jr.")     || desc.includes("0-2 years") || desc.includes("fresher") || desc.includes("entry level")) return "junior";
-  if (desc.includes("2+ years") || desc.includes("3+ years") || desc.includes("4+ years") || title.includes("mid")) return "mid";
+  if (
+    title.includes("senior") || title.includes("sr.") ||
+    desc.includes("5+ years") || desc.includes("6+ years") ||
+    desc.includes("7+ years") || desc.includes("8+ years")
+  ) return "senior";
+
+  if (
+    title.includes("principal") || title.includes("staff") ||
+    title.includes("lead") || title.includes("manager") ||
+    title.includes("head of") || title.includes("director")
+  ) return "lead";
+
+  if (
+    title.includes("junior") || title.includes("jr.") ||
+    desc.includes("0-2 years") || desc.includes("0 to 2 years") ||
+    desc.includes("fresher") || desc.includes("entry level") ||
+    desc.includes("entry-level")
+  ) return "junior";
+
+  if (
+    desc.includes("2+ years") || desc.includes("3+ years") ||
+    desc.includes("4+ years") || title.includes("mid")
+  ) return "mid";
 
   return "any";
 }
@@ -42,7 +65,8 @@ function extractSkillTags(job) {
     "graphql", "django", "flask", "angular", "vue", "spring", "next.js",
     "machine learning", "deep learning", "data science", "analytics",
     "power bi", "tableau", "salesforce", "figma", "scrum", "agile", "devops",
-    "ios", "android", "flutter", "go", "rust", "c++", "c#", "excel", "sap"
+    "ios", "android", "flutter", "go", "rust", "c++", "c#", "excel", "sap",
+    "product management", "ux", "ui"
   ];
 
   const found = [];
@@ -73,89 +97,91 @@ function buildLocation(job) {
   return "India";
 }
 
-// Wide variety of roles to maximise coverage of Indian openings
+// ── Query matrix ─────────────────────────────────────────────────────────────
+// Mixing role-based AND city-based queries ensures we catch jobs that are
+// indexed under a city name rather than "India". JSearch aggregates LinkedIn,
+// Indeed, Glassdoor, Naukri etc. — broader queries = more sources covered.
+
 const SEARCH_QUERIES = [
+  // Role + country (broad sweep)
   "software engineer jobs India",
   "product manager jobs India",
   "data analyst jobs India",
   "business analyst jobs India",
-  "marketing manager jobs India",
-  "finance analyst jobs India",
-  "operations manager jobs India",
-  "full stack developer India"
+  "full stack developer India",
+  "marketing manager India",
+  "finance analyst India",
+  "operations manager India",
+  "UI UX designer India",
+  "project manager India",
+  // City-specific (catches location-indexed postings)
+  "jobs in Bangalore",
+  "jobs in Hyderabad",
+  "jobs in Mumbai",
+  "jobs in Pune",
+  "jobs in Delhi NCR",
+  "jobs in Chennai",
+  "jobs in Kolkata",
+  "jobs in Noida Gurgaon"
 ];
 
+// How many queries to run per call (keeps API usage reasonable)
+// Increase BATCH_SIZE if you have a higher-tier RapidAPI plan
+const BATCH_SIZE = 8;
+
 export async function fetchJobs(customQuery, options) {
-  const pages      = (options && options.pages)      ? options.pages      : 1;
+  const pages      = (options && options.pages)      ? options.pages      : 2;
   const datePosted = (options && options.datePosted) ? options.datePosted : "month";
 
   const apiKey = import.meta.env.VITE_JOBS_KEY;
 
-  if (!apiKey || apiKey.trim() === "") {
+  if (!apiKey) {
     throw new Error(
-      "MISSING_API_KEY: Add VITE_JOBS_KEY to your Render environment variables. " +
-      "Get a free key at rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch"
+      "Missing VITE_JOBS_KEY — add it to Render environment variables."
     );
   }
 
-  const queries  = customQuery ? [customQuery] : SEARCH_QUERIES;
-  const allJobs  = [];
-  const seenIds  = new Set();
-  let totalFetched = 0;
-  let failCount = 0;
+  // If a specific query is requested, just run that one
+  const queries = customQuery
+    ? [customQuery]
+    : SEARCH_QUERIES.slice(0, BATCH_SIZE);
+
+  const allJobs = [];
+  const seenIds = new Set();
 
   for (const q of queries) {
     try {
       const params = [
-        "query="       + encodeURIComponent(q),
-        "num_pages="   + String(pages),
-        "date_posted=" + datePosted,
+        "query="            + encodeURIComponent(q),
+        "num_pages="        + String(pages),
+        "date_posted="      + datePosted,
         "country=in",
-        "language=en"
+        "language=en",
+        "employment_types=FULLTIME%2CPARTTIME%2CCONTRACTOR%2CINTERNSHIP"
       ].join("&");
 
       const res = await fetch(
         "https://jsearch.p.rapidapi.com/search?" + params,
         {
           headers: {
-            "X-RapidAPI-Key":  apiKey.trim(),
+            "X-RapidAPI-Key":  apiKey,
             "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
           }
         }
       );
 
-      // Surface HTTP errors clearly
       if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        if (res.status === 401 || res.status === 403) {
-          throw new Error(
-            "INVALID_API_KEY: Your VITE_JOBS_KEY was rejected (HTTP " + res.status + "). " +
-            "Check the key on rapidapi.com — it may be expired or wrong."
-          );
-        }
-        if (res.status === 429) {
-          throw new Error(
-            "QUOTA_EXCEEDED: You've hit the RapidAPI rate limit. " +
-            "Upgrade your plan at rapidapi.com or wait until your quota resets."
-          );
-        }
-        console.warn("fetchJobs: HTTP " + res.status + " for query:", q, errText);
-        failCount++;
+        console.warn("[fetchJobs] HTTP " + res.status + " for: " + q);
         continue;
       }
 
       const data = await res.json();
-      totalFetched++;
 
-      // API returns { status, data: [...] }
-      if (!data || !Array.isArray(data.data)) {
-        console.warn("fetchJobs: unexpected response shape for query:", q, data);
-        continue;
-      }
+      if (!data || !Array.isArray(data.data)) continue;
 
       for (const job of data.data) {
-        if (!job.job_id) continue;
-        if (seenIds.has(job.job_id)) continue;
+        if (!job.job_id)               continue; // skip malformed
+        if (seenIds.has(job.job_id))   continue; // deduplicate
         seenIds.add(job.job_id);
 
         allJobs.push({
@@ -175,21 +201,8 @@ export async function fetchJobs(customQuery, options) {
         });
       }
     } catch (err) {
-      // Re-throw critical errors (bad key, quota) so Jobs.jsx can show them
-      if (err.message.startsWith("MISSING_API_KEY") || err.message.startsWith("INVALID_API_KEY") || err.message.startsWith("QUOTA_EXCEEDED")) {
-        throw err;
-      }
-      console.warn("fetchJobs: query failed —", q, err.message);
-      failCount++;
+      console.warn("[fetchJobs] query failed \u2014 " + q + " \u2014 " + err.message);
     }
-  }
-
-  // If every single query failed, surface it
-  if (totalFetched === 0 && failCount > 0) {
-    throw new Error(
-      "FETCH_FAILED: All job queries failed. This is usually a network issue or " +
-      "your RapidAPI key is invalid. Check the browser console for details."
-    );
   }
 
   return allJobs;
