@@ -6,7 +6,7 @@ import Jobs         from "./pages/Jobs";
 import Applications from "./pages/Applications";
 import Dashboard    from "./pages/Dashboard";
 import Outreach     from "./pages/Outreach";
-import OnboardingModal from "./components/OnboardingModal";
+import OnboardingModal from "./components/OnboardingModal.jsx";
 
 /* ─── Guide content ─────────────────────────────────────────────── */
 
