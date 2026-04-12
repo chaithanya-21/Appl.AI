@@ -25,6 +25,7 @@ const DEFAULT_PROFILE = {
   name:          "",
   headline:      "",
   linkedinUrl:   "",
+  photo:         "",   // ← NEW: stores LinkedIn profile photo URL
   skills:        [],
   summary:       "",
   setupComplete: false
